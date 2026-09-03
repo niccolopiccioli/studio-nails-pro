@@ -8,6 +8,13 @@
       "when": 1788478679383,
       "tag": "0000_studio_nails_core",
       "breakpoints": true
+    },
+    {
+      "idx": 1,
+      "version": "7",
+      "when": 1788478744398,
+      "tag": "0001_owner_manage_roles",
+      "breakpoints": true
     }
   ]
 }
