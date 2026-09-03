@@ -1,5 +1,13 @@
 {
   "version": "7",
   "dialect": "postgresql",
-  "entries": []
+  "entries": [
+    {
+      "idx": 0,
+      "version": "7",
+      "when": 1788478679383,
+      "tag": "0000_studio_nails_core",
+      "breakpoints": true
+    }
+  ]
 }
