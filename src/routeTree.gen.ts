@@ -10,12 +10,19 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PrenotaRouteImport } from './routes/prenota'
 import { Route as ServiziRouteImport } from './routes/servizi'
+import { Route as AppuntamentoTokenRouteImport } from './routes/appuntamento.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthRoute = AuthRouteImport.update({
+  id: '/auth',
+  path: '/auth',
   getParentRoute: () => rootRouteImport,
 } as any)
 const PrenotaRoute = PrenotaRouteImport.update({
@@ -28,35 +35,54 @@ const ServiziRoute = ServiziRouteImport.update({
   path: '/servizi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AppuntamentoTokenRoute = AppuntamentoTokenRouteImport.update({
+  id: '/appuntamento/$token',
+  path: '/appuntamento/$token',
+  getParentRoute: () => rootRouteImport,
+} as any)
 
 export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
   '/servizi': typeof ServiziRoute
+  '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRoutesByTo {
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
   '/servizi': typeof ServiziRoute
+  '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
   '/servizi': typeof ServiziRoute
+  '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/prenota' | '/servizi'
+  fullPaths: '/' | '/auth' | '/prenota' | '/servizi' | '/appuntamento/$token'
   fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/prenota' | '/servizi'
-  id: '__root__' | '/' | '/prenota' | '/servizi'
+  to: '/' | '/auth' | '/prenota' | '/servizi' | '/appuntamento/$token'
+  id:
+    | '__root__'
+    | '/'
+    | '/auth'
+    | '/prenota'
+    | '/servizi'
+    | '/appuntamento/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthRoute: typeof AuthRoute
   PrenotaRoute: typeof PrenotaRoute
   ServiziRoute: typeof ServiziRoute
+  AppuntamentoTokenRoute: typeof AppuntamentoTokenRoute
 }
 
 declare module '@tanstack/react-router' {
@@ -66,6 +92,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/auth': {
+      id: '/auth'
+      path: '/auth'
+      fullPath: '/auth'
+      preLoaderRoute: typeof AuthRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/prenota': {
@@ -82,13 +115,22 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiziRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/appuntamento/$token': {
+      id: '/appuntamento/$token'
+      path: '/appuntamento/$token'
+      fullPath: '/appuntamento/$token'
+      preLoaderRoute: typeof AppuntamentoTokenRouteImport
+      parentRoute: typeof rootRouteImport
+    }
   }
 }
 
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthRoute: AuthRoute,
   PrenotaRoute: PrenotaRoute,
   ServiziRoute: ServiziRoute,
+  AppuntamentoTokenRoute: AppuntamentoTokenRoute,
 }
 export const routeTree = rootRouteImport
   ._addFileChildren(rootRouteChildren)
