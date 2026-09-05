@@ -10,14 +10,22 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PrenotaRouteImport } from './routes/prenota'
 import { Route as ServiziRouteImport } from './routes/servizi'
+import { Route as AuthenticatedClientiRouteImport } from './routes/_authenticated/clienti'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
+import { Route as AuthenticatedDisponibilitaRouteImport } from './routes/_authenticated/disponibilita'
 import { Route as AppuntamentoTokenRouteImport } from './routes/appuntamento.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -35,6 +43,22 @@ const ServiziRoute = ServiziRouteImport.update({
   path: '/servizi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedClientiRoute = AuthenticatedClientiRouteImport.update({
+  id: '/clienti',
+  path: '/clienti',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
+const AuthenticatedDisponibilitaRoute =
+  AuthenticatedDisponibilitaRouteImport.update({
+    id: '/disponibilita',
+    path: '/disponibilita',
+    getParentRoute: () => AuthenticatedRouteRoute,
+  } as any)
 const AppuntamentoTokenRoute = AppuntamentoTokenRouteImport.update({
   id: '/appuntamento/$token',
   path: '/appuntamento/$token',
@@ -46,6 +70,9 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
   '/servizi': typeof ServiziRoute
+  '/clienti': typeof AuthenticatedClientiRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/disponibilita': typeof AuthenticatedDisponibilitaRoute
   '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRoutesByTo {
@@ -53,32 +80,60 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
   '/servizi': typeof ServiziRoute
+  '/clienti': typeof AuthenticatedClientiRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
+  '/disponibilita': typeof AuthenticatedDisponibilitaRoute
   '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
   '/servizi': typeof ServiziRoute
+  '/_authenticated/clienti': typeof AuthenticatedClientiRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
+  '/_authenticated/disponibilita': typeof AuthenticatedDisponibilitaRoute
   '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/prenota' | '/servizi' | '/appuntamento/$token'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/prenota' | '/servizi' | '/appuntamento/$token'
-  id:
-    | '__root__'
+  fullPaths:
     | '/'
     | '/auth'
     | '/prenota'
     | '/servizi'
+    | '/clienti'
+    | '/dashboard'
+    | '/disponibilita'
+    | '/appuntamento/$token'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/auth'
+    | '/prenota'
+    | '/servizi'
+    | '/clienti'
+    | '/dashboard'
+    | '/disponibilita'
+    | '/appuntamento/$token'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/prenota'
+    | '/servizi'
+    | '/_authenticated/clienti'
+    | '/_authenticated/dashboard'
+    | '/_authenticated/disponibilita'
     | '/appuntamento/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PrenotaRoute: typeof PrenotaRoute
   ServiziRoute: typeof ServiziRoute
@@ -92,6 +147,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -115,6 +177,27 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiziRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/clienti': {
+      id: '/_authenticated/clienti'
+      path: '/clienti'
+      fullPath: '/clienti'
+      preLoaderRoute: typeof AuthenticatedClientiRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
+    '/_authenticated/disponibilita': {
+      id: '/_authenticated/disponibilita'
+      path: '/disponibilita'
+      fullPath: '/disponibilita'
+      preLoaderRoute: typeof AuthenticatedDisponibilitaRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/appuntamento/$token': {
       id: '/appuntamento/$token'
       path: '/appuntamento/$token'
@@ -125,8 +208,24 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedClientiRoute: typeof AuthenticatedClientiRoute
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+  AuthenticatedDisponibilitaRoute: typeof AuthenticatedDisponibilitaRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedClientiRoute: AuthenticatedClientiRoute,
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+  AuthenticatedDisponibilitaRoute: AuthenticatedDisponibilitaRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PrenotaRoute: PrenotaRoute,
   ServiziRoute: ServiziRoute,
