@@ -10,14 +10,20 @@
 
 import { Route as rootRouteImport } from './routes/__root'
 import { Route as IndexRouteImport } from './routes/index'
+import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PrenotaRouteImport } from './routes/prenota'
 import { Route as ServiziRouteImport } from './routes/servizi'
+import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AppuntamentoTokenRouteImport } from './routes/appuntamento.$token'
 
 const IndexRoute = IndexRouteImport.update({
   id: '/',
   path: '/',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const AuthenticatedRouteRoute = AuthenticatedRouteRouteImport.update({
+  id: '/_authenticated',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthRoute = AuthRouteImport.update({
@@ -35,6 +41,11 @@ const ServiziRoute = ServiziRouteImport.update({
   path: '/servizi',
   getParentRoute: () => rootRouteImport,
 } as any)
+const AuthenticatedDashboardRoute = AuthenticatedDashboardRouteImport.update({
+  id: '/dashboard',
+  path: '/dashboard',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AppuntamentoTokenRoute = AppuntamentoTokenRouteImport.update({
   id: '/appuntamento/$token',
   path: '/appuntamento/$token',
@@ -46,6 +57,7 @@ export interface FileRoutesByFullPath {
   '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
   '/servizi': typeof ServiziRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRoutesByTo {
@@ -53,32 +65,50 @@ export interface FileRoutesByTo {
   '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
   '/servizi': typeof ServiziRoute
+  '/dashboard': typeof AuthenticatedDashboardRoute
   '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRoutesById {
   __root__: typeof rootRouteImport
   '/': typeof IndexRoute
+  '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
   '/servizi': typeof ServiziRoute
+  '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRouteTypes {
   fileRoutesByFullPath: FileRoutesByFullPath
-  fullPaths: '/' | '/auth' | '/prenota' | '/servizi' | '/appuntamento/$token'
-  fileRoutesByTo: FileRoutesByTo
-  to: '/' | '/auth' | '/prenota' | '/servizi' | '/appuntamento/$token'
-  id:
-    | '__root__'
+  fullPaths:
     | '/'
     | '/auth'
     | '/prenota'
     | '/servizi'
+    | '/dashboard'
+    | '/appuntamento/$token'
+  fileRoutesByTo: FileRoutesByTo
+  to:
+    | '/'
+    | '/auth'
+    | '/prenota'
+    | '/servizi'
+    | '/dashboard'
+    | '/appuntamento/$token'
+  id:
+    | '__root__'
+    | '/'
+    | '/_authenticated'
+    | '/auth'
+    | '/prenota'
+    | '/servizi'
+    | '/_authenticated/dashboard'
     | '/appuntamento/$token'
   fileRoutesById: FileRoutesById
 }
 export interface RootRouteChildren {
   IndexRoute: typeof IndexRoute
+  AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PrenotaRoute: typeof PrenotaRoute
   ServiziRoute: typeof ServiziRoute
@@ -92,6 +122,13 @@ declare module '@tanstack/react-router' {
       path: '/'
       fullPath: '/'
       preLoaderRoute: typeof IndexRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/_authenticated': {
+      id: '/_authenticated'
+      path: ''
+      fullPath: '/'
+      preLoaderRoute: typeof AuthenticatedRouteRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/auth': {
@@ -115,6 +152,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof ServiziRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/_authenticated/dashboard': {
+      id: '/_authenticated/dashboard'
+      path: '/dashboard'
+      fullPath: '/dashboard'
+      preLoaderRoute: typeof AuthenticatedDashboardRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/appuntamento/$token': {
       id: '/appuntamento/$token'
       path: '/appuntamento/$token'
@@ -125,8 +169,20 @@ declare module '@tanstack/react-router' {
   }
 }
 
+interface AuthenticatedRouteRouteChildren {
+  AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
+}
+
+const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
+  AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
+}
+
+const AuthenticatedRouteRouteWithChildren =
+  AuthenticatedRouteRoute._addFileChildren(AuthenticatedRouteRouteChildren)
+
 const rootRouteChildren: RootRouteChildren = {
   IndexRoute: IndexRoute,
+  AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PrenotaRoute: PrenotaRoute,
   ServiziRoute: ServiziRoute,
