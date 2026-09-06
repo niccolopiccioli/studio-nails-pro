@@ -17,6 +17,7 @@ import { Route as ServiziRouteImport } from './routes/servizi'
 import { Route as AuthenticatedClientiRouteImport } from './routes/_authenticated/clienti'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDisponibilitaRouteImport } from './routes/_authenticated/disponibilita'
+import { Route as AuthenticatedGestionaleRouteImport } from './routes/_authenticated/gestionale'
 import { Route as AppuntamentoTokenRouteImport } from './routes/appuntamento.$token'
 
 const IndexRoute = IndexRouteImport.update({
@@ -59,6 +60,11 @@ const AuthenticatedDisponibilitaRoute =
     path: '/disponibilita',
     getParentRoute: () => AuthenticatedRouteRoute,
   } as any)
+const AuthenticatedGestionaleRoute = AuthenticatedGestionaleRouteImport.update({
+  id: '/gestionale',
+  path: '/gestionale',
+  getParentRoute: () => AuthenticatedRouteRoute,
+} as any)
 const AppuntamentoTokenRoute = AppuntamentoTokenRouteImport.update({
   id: '/appuntamento/$token',
   path: '/appuntamento/$token',
@@ -73,6 +79,7 @@ export interface FileRoutesByFullPath {
   '/clienti': typeof AuthenticatedClientiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/disponibilita': typeof AuthenticatedDisponibilitaRoute
+  '/gestionale': typeof AuthenticatedGestionaleRoute
   '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRoutesByTo {
@@ -83,6 +90,7 @@ export interface FileRoutesByTo {
   '/clienti': typeof AuthenticatedClientiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/disponibilita': typeof AuthenticatedDisponibilitaRoute
+  '/gestionale': typeof AuthenticatedGestionaleRoute
   '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRoutesById {
@@ -95,6 +103,7 @@ export interface FileRoutesById {
   '/_authenticated/clienti': typeof AuthenticatedClientiRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/disponibilita': typeof AuthenticatedDisponibilitaRoute
+  '/_authenticated/gestionale': typeof AuthenticatedGestionaleRoute
   '/appuntamento/$token': typeof AppuntamentoTokenRoute
 }
 export interface FileRouteTypes {
@@ -107,6 +116,7 @@ export interface FileRouteTypes {
     | '/clienti'
     | '/dashboard'
     | '/disponibilita'
+    | '/gestionale'
     | '/appuntamento/$token'
   fileRoutesByTo: FileRoutesByTo
   to:
@@ -117,6 +127,7 @@ export interface FileRouteTypes {
     | '/clienti'
     | '/dashboard'
     | '/disponibilita'
+    | '/gestionale'
     | '/appuntamento/$token'
   id:
     | '__root__'
@@ -128,6 +139,7 @@ export interface FileRouteTypes {
     | '/_authenticated/clienti'
     | '/_authenticated/dashboard'
     | '/_authenticated/disponibilita'
+    | '/_authenticated/gestionale'
     | '/appuntamento/$token'
   fileRoutesById: FileRoutesById
 }
@@ -198,6 +210,13 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof AuthenticatedDisponibilitaRouteImport
       parentRoute: typeof AuthenticatedRouteRoute
     }
+    '/_authenticated/gestionale': {
+      id: '/_authenticated/gestionale'
+      path: '/gestionale'
+      fullPath: '/gestionale'
+      preLoaderRoute: typeof AuthenticatedGestionaleRouteImport
+      parentRoute: typeof AuthenticatedRouteRoute
+    }
     '/appuntamento/$token': {
       id: '/appuntamento/$token'
       path: '/appuntamento/$token'
@@ -212,12 +231,14 @@ interface AuthenticatedRouteRouteChildren {
   AuthenticatedClientiRoute: typeof AuthenticatedClientiRoute
   AuthenticatedDashboardRoute: typeof AuthenticatedDashboardRoute
   AuthenticatedDisponibilitaRoute: typeof AuthenticatedDisponibilitaRoute
+  AuthenticatedGestionaleRoute: typeof AuthenticatedGestionaleRoute
 }
 
 const AuthenticatedRouteRouteChildren: AuthenticatedRouteRouteChildren = {
   AuthenticatedClientiRoute: AuthenticatedClientiRoute,
   AuthenticatedDashboardRoute: AuthenticatedDashboardRoute,
   AuthenticatedDisponibilitaRoute: AuthenticatedDisponibilitaRoute,
+  AuthenticatedGestionaleRoute: AuthenticatedGestionaleRoute,
 }
 
 const AuthenticatedRouteRouteWithChildren =
