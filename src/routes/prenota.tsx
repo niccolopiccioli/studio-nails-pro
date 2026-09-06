@@ -16,9 +16,9 @@ import {
 import { dayKey, formatDateLong, formatDuration, formatPrice } from "@/lib/time";
 
 export const Route = createFileRoute("/prenota")({
-  validateSearch: (search: Record<string, unknown>) => ({
-    servizio: typeof search["servizio"] === "string" ? (search["servizio"] as string) : undefined,
-  }),
+  validateSearch: (search: Record<string, unknown>): { servizio?: string } =>
+    typeof search["servizio"] === "string" ? { servizio: search["servizio"] } : {},
+
   head: () => ({
     meta: [
       { title: "Prenota online — Studio Nails" },

@@ -102,9 +102,15 @@ export const updateAppointment = createServerFn({ method: "POST" })
         .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
-    if (data.status) patch["status"] = data.status;
-    if (data.notes !== undefined) patch["notes"] = data.notes;
+    const patch: {
+      status?: string;
+      notes?: string;
+      starts_at?: string;
+      ends_at?: string;
+    } = {};
+    if (data.status) patch.status = data.status;
+    if (data.notes !== undefined) patch.notes = data.notes;
+
 
     if (data.day && data.time) {
       const { data: appt } = await context.supabase
@@ -235,10 +241,12 @@ export const saveService = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: z.input<typeof serviceSchema>) => serviceSchema.parse(input))
   .handler(async ({ data, context }) => {
-    const payload = { ...data, studio_id: STUDIO_ID };
-    const { error } = data.id
-      ? await context.supabase.from("services").update(payload).eq("id", data.id)
+    const { id, ...fields } = data;
+    const payload = { ...fields, studio_id: STUDIO_ID };
+    const { error } = id
+      ? await context.supabase.from("services").update(payload).eq("id", id)
       : await context.supabase.from("services").insert(payload);
+
     if (error) throw new Error(error.message);
     return { ok: true };
   });
