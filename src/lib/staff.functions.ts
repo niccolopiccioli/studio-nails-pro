@@ -102,9 +102,15 @@ export const updateAppointment = createServerFn({ method: "POST" })
         .parse(input),
   )
   .handler(async ({ data, context }) => {
-    const patch: Record<string, unknown> = {};
-    if (data.status) patch["status"] = data.status;
-    if (data.notes !== undefined) patch["notes"] = data.notes;
+    const patch: {
+      status?: string;
+      notes?: string;
+      starts_at?: string;
+      ends_at?: string;
+    } = {};
+    if (data.status) patch.status = data.status;
+    if (data.notes !== undefined) patch.notes = data.notes;
+
 
     if (data.day && data.time) {
       const { data: appt } = await context.supabase
