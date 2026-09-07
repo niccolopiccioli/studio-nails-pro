@@ -22,7 +22,7 @@ Estetica beauty premium (crema / rosa cipria / bianco), layout responsive da iPh
 - `/gestionale` — solo Servizi (nome, prezzo, durata) e dati Attività; niente analytics, niente gestione utenti
 
 **Notifiche**
-- SOLO email di conferma prenotazione (via Resend, best-effort). Niente reminder, niente WhatsApp, niente follow-up.
+- SOLO email di conferma prenotazione (via EmailJS, best-effort). Niente reminder, niente WhatsApp, niente follow-up.
 
 **Limitazioni strategiche del free**
 - 1 operatore, nessuna automazione, nessuna integrazione marketing, nessuna dashboard avanzata
@@ -52,7 +52,7 @@ src/
       gestionale.tsx         # servizi + attività (solo owner)
   lib/
     booking.functions.ts     # serverFn pubbliche (service_role): studio, disponibilità, slot, CRUD via token
-    email.server.ts          # SOLO server: invio email di conferma via Resend (best-effort)
+    email.server.ts          # SOLO server: invio email di conferma via EmailJS (best-effort)
     staff.functions.ts       # serverFn staff (JWT utente): agenda, clienti, regole, servizi, ruoli, settings
     time.ts                  # TZ Europe/Rome, STUDIO_ID, format price/duration/date
   integrations/supabase/     # client pubblico (anon), client server (service_role), middleware auth
@@ -91,7 +91,7 @@ npm run format
 | `SUPABASE_PUBLISHABLE_KEY` / `VITE_SUPABASE_PUBLISHABLE_KEY` | server + client | chiave anon/publishable |
 | `SUPABASE_SERVICE_ROLE_KEY` (`sb_secret_...`) | solo server, mai nel client | prenotazioni pubbliche + bootstrap profili staff |
 | `DATABASE_URL` | solo locale/CI | connection string Postgres per `drizzle-kit push/migrate` |
-| `RESEND_API_KEY` / `EMAIL_FROM` / `APP_URL` | solo server | sola notifica free: email di conferma (senza, la prenotazione funziona ma non parte l'email) |
+| `EMAILJS_SERVICE_ID` / `EMAILJS_TEMPLATE_ID` / `EMAILJS_PUBLIC_KEY` / `EMAILJS_PRIVATE_KEY` | solo server | sola notifica free: email di conferma (senza, la prenotazione funziona ma non parte l'email) |
 
 Senza `SUPABASE_SERVICE_ROLE_KEY` le server function pubbliche rispondono con errore di configurazione.
 
@@ -135,7 +135,7 @@ Stesso codice, un deploy per sito. Ogni sito punta allo stesso progetto Supabase
 - **Tema runtime:** `studios.theme` (`nails` default, `estetica` = font Fraunces + palette salvia/botanico via `[data-theme]`), applicato pre-pittura da loader root. Nuova palette = solo override di token.
 - **Brand runtime:** `studios.brand` (JSON: tagline, hero, CTA, rating, badge, didascalie) via context `useBrand()`; SEO dinamica con `useDocTitle()`. Servizi/orari/contatti già dal DB.
 - **Email runtime:** link e nome studio derivati dalla request (`requestBaseUrl()`), non da `APP_URL`.
-- **Deploy:** `vercel.json` contiene le env pubbliche condivise (solo `SUPABASE_SERVICE_ROLE_KEY` da dashboard per progetto). Nuovo sito = riga in `studios` (theme/brand/domains) + nuovo progetto Vercel dallo stesso repo.
+- **Deploy:** `vercel.json` contiene le env pubbliche condivise (solo `SUPABASE_SERVICE_ROLE_KEY` + `EMAILJS_*` da dashboard per progetto). Nuovo sito = riga in `studios` (theme/brand/domains) + nuovo progetto Vercel dallo stesso repo.
 - **Isolamento:** ogni query è filtrata per `studio_id` + RLS. Nota: le policy di lettura pubblica (`services`, `availability_rules`, `closures`, `studios`) usano `using (true)`, quindi i listini sono leggibili cross-studio via API anon — accettabile (dati pubblici), da stringere se serve.
 - **Foto:** per ora condivise tra i siti; shoot dedicato per vertical come step futuro.
 

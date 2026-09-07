@@ -1,7 +1,14 @@
 // Helper SOLO server: invio della SOLA notifica consentita dal piano free,
-// l'email di conferma prenotazione. Niente reminder, niente WhatsApp,
-// niente follow-up. Importare solo dentro gli handler delle server function
+// l'email di conferma prenotazione via EmailJS (API REST server-side).
+// Niente reminder, niente WhatsApp, niente follow-up.
+// Importare solo dentro gli handler delle server function
 // (import dinamico), mai nel bundle client.
+//
+// Setup dashboard EmailJS (una volta):
+// 1. Collega un Email Service (es. Gmail)
+// 2. Crea un template con "To Email" = {{to_email}} e usa le variabili:
+//    {{client_name}} {{service_name}} {{studio_name}} {{when}} {{manage_url}} {{privacy_url}}
+// 3. Copia Service ID, Template ID, Public Key e Private Key nelle env.
 
 type BookingEmail = {
   to: string;
@@ -17,14 +24,6 @@ type BookingEmail = {
 
 function serverEnv(name: string): string | undefined {
   return typeof process !== "undefined" ? process.env?.[name] : undefined;
-}
-
-function escapeHtml(value: string): string {
-  return value
-    .replace(/&/g, "&amp;")
-    .replace(/</g, "&lt;")
-    .replace(/>/g, "&gt;")
-    .replace(/"/g, "&quot;");
 }
 
 function formatWhen(startsAt: string, endsAt: string): string {
@@ -45,15 +44,17 @@ function formatWhen(startsAt: string, endsAt: string): string {
 }
 
 /**
- * Invia la conferma via Resend. Fail-soft: se il servizio non è configurato
+ * Invia la conferma via EmailJS. Fail-soft: se il servizio non è configurato
  * o l'invio fallisce, logga e non blocca la prenotazione (l'operatore la vede
  * comunque in agenda).
  */
 export async function sendBookingConfirmationEmail(input: BookingEmail): Promise<void> {
-  const apiKey = serverEnv("RESEND_API_KEY");
-  const from = serverEnv("EMAIL_FROM");
-  if (!apiKey || !from) {
-    console.warn("[email] RESEND_API_KEY/EMAIL_FROM non configurati: conferma non inviata.");
+  const serviceId = serverEnv("EMAILJS_SERVICE_ID");
+  const templateId = serverEnv("EMAILJS_TEMPLATE_ID");
+  const publicKey = serverEnv("EMAILJS_PUBLIC_KEY");
+  const privateKey = serverEnv("EMAILJS_PRIVATE_KEY");
+  if (!serviceId || !templateId || !publicKey || !privateKey) {
+    console.warn("[email] EMAILJS_* non configurati: conferma non inviata.");
     return;
   }
 
@@ -61,31 +62,24 @@ export async function sendBookingConfirmationEmail(input: BookingEmail): Promise
   const manageUrl = appUrl ? `${appUrl}/appuntamento/${input.manageToken}` : null;
   const when = formatWhen(input.startsAt, input.endsAt);
 
-  const html = [
-    `<p>Ciao ${escapeHtml(input.clientName)},</p>`,
-    `<p>la tua prenotazione <strong>${escapeHtml(input.serviceName)}</strong> presso <strong>${escapeHtml(input.studioName)}</strong> è confermata:</p>`,
-    `<p><strong style="text-transform:capitalize">${escapeHtml(when)}</strong></p>`,
-    manageUrl
-      ? `<p>Gestisci l'appuntamento (sposta/cancella) da qui:<br><a href="${manageUrl}">${manageUrl}</a></p>`
-      : `<p>Conserva il link ricevuto in pagina per spostare o cancellare l'appuntamento.</p>`,
-    `<p>A presto!</p>`,
-    `<hr style="border:none;border-top:1px solid #eee;margin:16px 0">`,
-    `<p style="font-size:12px;color:#888">Usiamo i tuoi dati solo per gestire questo appuntamento, senza marketing. Info e cancellazione: ${
-      appUrl
-        ? `<a href="${appUrl}/privacy">${appUrl}/privacy</a>`
-        : "informativa privacy sul sito dello studio"
-    }.</p>`,
-  ].join("\n");
-
   try {
-    const res = await fetch("https://api.resend.com/emails", {
+    const res = await fetch("https://api.emailjs.com/api/v1.0/email/send", {
       method: "POST",
-      headers: { Authorization: `Bearer ${apiKey}`, "Content-Type": "application/json" },
+      headers: { "Content-Type": "application/json" },
       body: JSON.stringify({
-        from,
-        to: input.to,
-        subject: `Conferma prenotazione — ${input.studioName}`,
-        html,
+        service_id: serviceId,
+        template_id: templateId,
+        user_id: publicKey,
+        accessToken: privateKey,
+        template_params: {
+          to_email: input.to,
+          client_name: input.clientName,
+          service_name: input.serviceName,
+          studio_name: input.studioName,
+          when,
+          manage_url: manageUrl ?? "",
+          privacy_url: appUrl ? `${appUrl}/privacy` : "",
+        },
       }),
     });
     if (!res.ok) {
