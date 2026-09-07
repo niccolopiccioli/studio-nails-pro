@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 
 import { StaffShell } from "@/components/staff-shell";
+import { useBrand } from "@/lib/brand";
+import { VelunaGestionale } from "@/themes/veluna-staff";
 import {
   addClosure,
   getAvailabilitySettings,
@@ -22,10 +24,16 @@ export const Route = createFileRoute("/_authenticated/disponibilita")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: AvailabilityPage,
+  component: AvailabilityRoute,
 });
 
 const ORDER = [1, 2, 3, 4, 5, 6, 0];
+
+function AvailabilityRoute() {
+  const { theme } = useBrand();
+  if (theme === "veluna") return <VelunaGestionale section="orari" />;
+  return <AvailabilityPage />;
+}
 
 function AvailabilityPage() {
   const qc = useQueryClient();

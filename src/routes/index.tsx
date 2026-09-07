@@ -13,8 +13,8 @@ import work4 from "@/assets/work-4.jpg";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { useBrand, useDocTitle } from "@/lib/brand";
 import { EsteticaHome } from "@/themes/estetica";
-import { VelunaHome } from "@/themes/veluna";
-import { getPublicStudios, getStudioAndServices } from "@/lib/booking.functions";
+import { getStudioAndServices } from "@/lib/booking.functions";
+import { AuthPage } from "./auth";
 import { formatDuration, formatPrice } from "@/lib/time";
 
 export const Route = createFileRoute("/")({
@@ -60,14 +60,8 @@ function Home() {
   const { data } = useQuery({ queryKey: ["studio"], queryFn: () => fetchData() });
   const brand = useBrand();
   useDocTitle(`${brand.name} — ${brand.tagline}`);
-  const fetchSites = useServerFn(getPublicStudios);
-  const { data: sitesData } = useQuery({
-    queryKey: ["public-studios"],
-    queryFn: () => fetchSites(),
-    enabled: brand.theme === "veluna",
-  });
   if (brand.theme === "veluna") {
-    return <VelunaHome studios={sitesData?.studios ?? []} />;
+    return <AuthPage />;
   }
   const services = data?.services ?? [];
   const studioName = data?.studio?.name ?? brand.name;

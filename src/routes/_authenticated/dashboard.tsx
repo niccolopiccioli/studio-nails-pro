@@ -7,6 +7,8 @@ import { ChevronLeft, ChevronRight, Phone, Plus, StickyNote } from "lucide-react
 
 import { StaffShell, StatCard } from "@/components/staff-shell";
 import { useStaff } from "@/hooks/use-staff";
+import { useBrand } from "@/lib/brand";
+import { VelunaGestionale } from "@/themes/veluna-staff";
 import {
   createAppointmentManual,
   deleteAppointment,
@@ -31,10 +33,16 @@ export const Route = createFileRoute("/_authenticated/dashboard")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: DashboardPage,
+  component: DashboardRoute,
 });
 
 type View = "day" | "week";
+
+function DashboardRoute() {
+  const { theme } = useBrand();
+  if (theme === "veluna") return <VelunaGestionale section="agenda" />;
+  return <DashboardPage />;
+}
 
 function DashboardPage() {
   const { profile } = useStaff();

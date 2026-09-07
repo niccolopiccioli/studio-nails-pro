@@ -7,6 +7,8 @@ import { Plus, Trash2 } from "lucide-react";
 
 import { StaffShell } from "@/components/staff-shell";
 import { useStaff } from "@/hooks/use-staff";
+import { useBrand } from "@/lib/brand";
+import { VelunaGestionale } from "@/themes/veluna-staff";
 import {
   deleteService,
   listServicesAdmin,
@@ -22,13 +24,19 @@ export const Route = createFileRoute("/_authenticated/gestionale")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: ManagementPage,
+  component: ManagementRoute,
 });
 
 type Tab = "services" | "settings";
 
+function ManagementRoute() {
+  const { theme } = useBrand();
+  if (theme === "veluna") return <VelunaGestionale section="servizi" />;
+  return <ManagementPage />;
+}
+
 function ManagementPage() {
-  const { isOwner, studio, isLoading } = useStaff();
+  const { isManager, studio, isLoading } = useStaff();
   const [tab, setTab] = useState<Tab>("services");
 
   if (isLoading) {
@@ -39,11 +47,11 @@ function ManagementPage() {
     );
   }
 
-  if (!isOwner) {
+  if (!isManager) {
     return (
       <StaffShell title="Servizi">
         <div className="surface-card p-8 text-center">
-          <h2 className="font-display text-2xl">Area riservata al proprietario</h2>
+          <h2 className="font-display text-2xl">Area riservata a proprietario e admin</h2>
           <p className="mt-2 text-sm text-muted-foreground">
             Il piano free prevede un solo operatore.
           </p>

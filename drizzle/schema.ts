@@ -13,7 +13,7 @@ import {
   date,
 } from "drizzle-orm/pg-core";
 
-export const appRole = pgEnum("app_role", ["owner", "artist"]);
+export const appRole = pgEnum("app_role", ["owner", "artist", "admin"]);
 
 export const studios = pgTable("studios", {
   id: uuid("id").primaryKey().defaultRandom(),

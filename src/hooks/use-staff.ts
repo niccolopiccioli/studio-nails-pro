@@ -32,5 +32,6 @@ export function useStaff() {
     studio: query.data?.studio ?? null,
     roles,
     isOwner: roles.includes("owner"),
+    isManager: roles.includes("owner") || roles.includes("admin"),
   };
 }

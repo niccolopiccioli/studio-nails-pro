@@ -17,7 +17,7 @@ export const Route = createFileRoute("/auth")({
   component: AuthPage,
 });
 
-function AuthPage() {
+export function AuthPage() {
   const navigate = useNavigate();
   const brand = useBrand();
   useDocTitle("Accesso staff");
@@ -101,9 +101,11 @@ function AuthPage() {
   return (
     <div className="gradient-blush flex min-h-screen items-center justify-center px-5 py-12">
       <div className="surface-card w-full max-w-md p-8">
-        <Link to="/" className="eyebrow">
-          ← {brand.name}
-        </Link>
+        {brand.theme !== "veluna" && (
+          <Link to="/" className="eyebrow">
+            ← {brand.name}
+          </Link>
+        )}
         <h1 className="mt-4 font-display text-4xl">
           {mode === "signin" && "Area riservata"}
           {mode === "signup" && "Crea il tuo accesso"}

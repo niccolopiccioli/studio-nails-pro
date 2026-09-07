@@ -6,6 +6,8 @@ import { toast } from "sonner";
 import { Phone, Search, Trash2 } from "lucide-react";
 
 import { StaffShell } from "@/components/staff-shell";
+import { useBrand } from "@/lib/brand";
+import { VelunaGestionale } from "@/themes/veluna-staff";
 import { deleteClient, listClients } from "@/lib/staff.functions";
 import { formatDateShort } from "@/lib/time";
 
@@ -17,8 +19,14 @@ export const Route = createFileRoute("/_authenticated/clienti")({
       { name: "robots", content: "noindex" },
     ],
   }),
-  component: ClientsPage,
+  component: ClientsRoute,
 });
+
+function ClientsRoute() {
+  const { theme } = useBrand();
+  if (theme === "veluna") return <VelunaGestionale section="clienti" />;
+  return <ClientsPage />;
+}
 
 function ClientsPage() {
   const fetchClients = useServerFn(listClients);

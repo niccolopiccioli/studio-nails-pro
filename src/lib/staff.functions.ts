@@ -442,8 +442,8 @@ export const listStaffUsers = createServerFn({ method: "GET" })
 
 export const setUserRole = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
-  .inputValidator((input: { userId: string; role: "owner" | "artist" }) =>
-    z.object({ userId: uuid, role: z.enum(["owner", "artist"]) }).parse(input),
+  .inputValidator((input: { userId: string; role: "owner" | "artist" | "admin" }) =>
+    z.object({ userId: uuid, role: z.enum(["owner", "artist", "admin"]) }).parse(input),
   )
   .handler(async ({ data, context }) => {
     const { data: isOwner } = await context.supabase.rpc("has_role", {
