@@ -218,7 +218,7 @@ export const platformDeleteAppointment = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const platformListClients = createServerFn({ method: "GET" })
+export const platformListClients = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { studioId: string }) => z.object({ ...studioInput }).parse(input ?? {}))
   .handler(async ({ data, context }) => {
@@ -266,7 +266,7 @@ export const platformDeleteClient = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const platformGetAvailability = createServerFn({ method: "GET" })
+export const platformGetAvailability = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { studioId: string }) => z.object({ ...studioInput }).parse(input ?? {}))
   .handler(async ({ data, context }) => {
@@ -340,7 +340,7 @@ export const platformRemoveClosure = createServerFn({ method: "POST" })
     return { ok: true };
   });
 
-export const platformListServices = createServerFn({ method: "GET" })
+export const platformListServices = createServerFn({ method: "POST" })
   .middleware([requireSupabaseAuth])
   .inputValidator((input: { studioId: string }) => z.object({ ...studioInput }).parse(input ?? {}))
   .handler(async ({ data, context }) => {

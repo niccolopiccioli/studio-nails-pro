@@ -21,6 +21,9 @@ export function AuthPage() {
   const navigate = useNavigate();
   const brand = useBrand();
   useDocTitle("Accesso staff");
+
+  // Login staff solo su Veluna (gestionale centrale). Sui siti pubblici
+  // studio-nails / estetica-pura l'auth è disabilitata: solo prenotazioni.
   const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "reset">(() =>
     typeof window !== "undefined" && window.location.hash.includes("type=recovery")
       ? "reset"
@@ -97,6 +100,28 @@ export function AuthPage() {
       toast.error("Accesso con Google non riuscito");
     }
   };
+
+  if (brand.theme !== "veluna") {
+    return (
+      <div className="gradient-blush flex min-h-screen items-center justify-center px-5 py-12">
+        <div className="surface-card w-full max-w-md p-8 text-center">
+          <Link to="/" className="eyebrow">
+            ← {brand.name}
+          </Link>
+          <h1 className="mt-4 font-display text-4xl">Solo prenotazioni</h1>
+          <p className="mt-2 text-sm text-muted-foreground">
+            L'accesso staff è solo sulla console Veluna. Qui puoi prenotare senza account.
+          </p>
+          <Link
+            to="/prenota"
+            className="silk mt-7 inline-flex rounded-full bg-primary px-8 py-3.5 text-[0.7rem] tracking-[0.24em] uppercase text-primary-foreground"
+          >
+            Prenota appuntamento
+          </Link>
+        </div>
+      </div>
+    );
+  }
 
   return (
     <div className="gradient-blush flex min-h-screen items-center justify-center px-5 py-12">

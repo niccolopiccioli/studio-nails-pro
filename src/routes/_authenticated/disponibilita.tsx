@@ -1,7 +1,7 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useState } from "react";
+import { useEffect, useState } from "react";
 import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 
@@ -189,6 +189,18 @@ function RuleRow({
     break_end: rule?.break_end ? rule.break_end.slice(0, 5) : null,
     closed: rule?.closed ?? false,
   });
+
+  // Sincronizza il form quando arrivano i dati dal server.
+  useEffect(() => {
+    setState({
+      weekday,
+      start_time: (rule?.start_time ?? "09:30").slice(0, 5),
+      end_time: (rule?.end_time ?? "19:00").slice(0, 5),
+      break_start: rule?.break_start ? rule.break_start.slice(0, 5) : null,
+      break_end: rule?.break_end ? rule.break_end.slice(0, 5) : null,
+      closed: rule?.closed ?? false,
+    });
+  }, [weekday, rule?.start_time, rule?.end_time, rule?.break_start, rule?.break_end, rule?.closed]);
 
   return (
     <div className="surface-card p-5">

@@ -1,7 +1,7 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useEffect, useMemo, useState } from "react";
 import { toast } from "sonner";
 import {
   CalendarDays,
@@ -65,10 +65,25 @@ function usePlatform() {
   const fetchStudios = useServerFn(listManagedStudios);
   const studiosQuery = useQuery({ queryKey: ["managed-studios"], queryFn: () => fetchStudios() });
   const studios = (studiosQuery.data?.studios ?? []) as ManagedStudio[];
-  // Niente selettore: ogni staff vede solo il proprio studio (il primo assegnato).
-  const selected = studios[0] ?? null;
+  const [selectedId, setSelectedId] = useState<string | null>(() => {
+    try {
+      return typeof window !== "undefined" ? window.localStorage.getItem("veluna-studio-id") : null;
+    } catch {
+      return null;
+    }
+  });
+  const selected = studios.find((s) => s.id === selectedId) ?? studios[0] ?? null;
 
-  return { studios, selected, isLoading: studiosQuery.isLoading };
+  const selectStudio = (id: string) => {
+    setSelectedId(id);
+    try {
+      window.localStorage.setItem("veluna-studio-id", id);
+    } catch {
+      /* noop */
+    }
+  };
+
+  return { studios, selected, selectStudio, isLoading: studiosQuery.isLoading };
 }
 
 /* ------------------------------- shell ------------------------------- */
@@ -76,10 +91,16 @@ function usePlatform() {
 function VelunaShell({
   section,
   studioName,
+  studios,
+  selectedId,
+  onSelectStudio,
   children,
 }: {
   section: PlatformSection;
   studioName: string | null;
+  studios?: ManagedStudio[];
+  selectedId?: string | null;
+  onSelectStudio?: (id: string) => void;
   children: ReactNode;
 }) {
   const navigate = useNavigate();
@@ -105,10 +126,25 @@ function VelunaShell({
             <p className="eyebrow">Veluna · Console</p>
             <div className="mt-1 flex items-center gap-3">
               <h1 className="font-display text-2xl leading-tight">{SECTION_META[section].title}</h1>
-              {studioName && (
-                <span className="border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground">
-                  {studioName}
-                </span>
+              {studios && studios.length > 1 && onSelectStudio ? (
+                <select
+                  value={selectedId ?? ""}
+                  onChange={(e) => onSelectStudio(e.target.value)}
+                  aria-label="Seleziona studio"
+                  className="border border-border bg-card px-3 py-1.5 text-sm outline-none"
+                >
+                  {studios.map((s) => (
+                    <option key={s.id} value={s.id}>
+                      {s.name}
+                    </option>
+                  ))}
+                </select>
+              ) : (
+                studioName && (
+                  <span className="border border-border bg-card px-3 py-1.5 text-sm text-muted-foreground">
+                    {studioName}
+                  </span>
+                )
               )}
             </div>
           </div>
@@ -166,7 +202,7 @@ function VelunaShell({
 /* ------------------------------- entry ------------------------------- */
 
 export function VelunaGestionale({ section }: { section: PlatformSection }) {
-  const { studios, selected, isLoading } = usePlatform();
+  const { studios, selected, selectStudio, isLoading } = usePlatform();
 
   if (isLoading) {
     return (
@@ -191,7 +227,13 @@ export function VelunaGestionale({ section }: { section: PlatformSection }) {
   }
 
   return (
-    <VelunaShell section={section} studioName={selected.name}>
+    <VelunaShell
+      section={section}
+      studioName={selected.name}
+      studios={studios}
+      selectedId={selected.id}
+      onSelectStudio={selectStudio}
+    >
       {section === "agenda" && <VelunaAgenda studioId={selected.id} />}
       {section === "clienti" && <VelunaClienti studioId={selected.id} />}
       {section === "orari" && <VelunaOrari studioId={selected.id} />}
@@ -813,7 +855,7 @@ function VelunaOrari({ studioId }: { studioId: string }) {
           const rule = rules.find((r) => r.weekday === wd);
           return (
             <VelunaRuleRow
-              key={wd}
+              key={`${studioId}-${wd}`}
               weekday={wd}
               rule={rule}
               onSave={(payload) => ruleMutation.mutate(payload)}
@@ -903,6 +945,18 @@ function VelunaRuleRow({
     break_end: rule?.break_end ? rule.break_end.slice(0, 5) : null,
     closed: rule?.closed ?? false,
   }));
+
+  // Sincronizza il form quando arrivano i dati dal server o si cambia studio.
+  useEffect(() => {
+    setState({
+      weekday,
+      start_time: (rule?.start_time ?? "09:30").slice(0, 5),
+      end_time: (rule?.end_time ?? "19:00").slice(0, 5),
+      break_start: rule?.break_start ? rule.break_start.slice(0, 5) : null,
+      break_end: rule?.break_end ? rule.break_end.slice(0, 5) : null,
+      closed: rule?.closed ?? false,
+    });
+  }, [weekday, rule?.start_time, rule?.end_time, rule?.break_start, rule?.break_end, rule?.closed]);
 
   return (
     <div className="border border-border bg-card p-5">
