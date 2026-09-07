@@ -4,7 +4,7 @@ import { CalendarDays, LogOut, Scissors, Settings2, Users } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
-import { BRAND_NAME } from "@/lib/brand";
+import { useBrand, useDocTitle } from "@/lib/brand";
 
 const navItems = [
   { to: "/dashboard", label: "Agenda", icon: CalendarDays },
@@ -24,6 +24,8 @@ export function StaffShell({
 }) {
   const navigate = useNavigate();
   const qc = useQueryClient();
+  const brand = useBrand();
+  useDocTitle(title);
 
   const signOut = async () => {
     await qc.cancelQueries();
@@ -37,7 +39,7 @@ export function StaffShell({
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <div>
-            <p className="eyebrow">{BRAND_NAME}</p>
+            <p className="eyebrow">{brand.name}</p>
             <h1 className="font-display text-2xl leading-tight">{title}</h1>
             {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
           </div>

@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 
 import { StaffShell } from "@/components/staff-shell";
-import { BRAND_NAME } from "@/lib/brand";
 import { useStaff } from "@/hooks/use-staff";
 import {
   deleteService,
@@ -18,7 +17,7 @@ import {
 export const Route = createFileRoute("/_authenticated/gestionale")({
   head: () => ({
     meta: [
-      { title: `Servizi e attività — ${BRAND_NAME}` },
+      { title: "Servizi e attività" },
       { name: "description", content: "Gestione base di servizi e dati dello studio." },
       { name: "robots", content: "noindex" },
     ],

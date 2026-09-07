@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 
 import { StaffShell } from "@/components/staff-shell";
-import { BRAND_NAME } from "@/lib/brand";
 import {
   addClosure,
   getAvailabilitySettings,
@@ -18,7 +17,7 @@ import { WEEKDAY_LABELS, formatDateLong } from "@/lib/time";
 export const Route = createFileRoute("/_authenticated/disponibilita")({
   head: () => ({
     meta: [
-      { title: `Disponibilità e chiusure — ${BRAND_NAME}` },
+      { title: "Disponibilità e chiusure" },
       { name: "description", content: "Orari di apertura, pausa e giorni di chiusura." },
       { name: "robots", content: "noindex" },
     ],

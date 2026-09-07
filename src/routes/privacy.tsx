@@ -3,13 +3,13 @@ import { useQuery } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 
 import { SiteFooter, SiteHeader } from "@/components/site-header";
-import { BRAND_NAME } from "@/lib/brand";
+import { useDocTitle } from "@/lib/brand";
 import { getStudioAndServices } from "@/lib/booking.functions";
 
 export const Route = createFileRoute("/privacy")({
   head: () => ({
     meta: [
-      { title: `Informativa privacy — ${BRAND_NAME}` },
+      { title: "Informativa privacy" },
       {
         name: "description",
         content: "Come trattiamo i dati personali per le prenotazioni, ai sensi del GDPR.",
@@ -22,7 +22,8 @@ export const Route = createFileRoute("/privacy")({
 function PrivacyPage() {
   const fetchData = useServerFn(getStudioAndServices);
   const { data } = useQuery({ queryKey: ["studio"], queryFn: () => fetchData() });
-  const studioName = data?.studio?.name ?? BRAND_NAME;
+  useDocTitle("Informativa privacy");
+  const studioName = data?.studio?.name ?? "lo studio";
   const studioPhone = data?.studio?.phone ?? "+39 333 1234567";
   const studioAddress = data?.studio?.address ?? "Via della Bellezza 12, Milano";
 

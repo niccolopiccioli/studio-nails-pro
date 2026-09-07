@@ -7,9 +7,12 @@ type BookingEmail = {
   to: string;
   clientName: string;
   serviceName: string;
+  studioName: string;
   startsAt: string;
   endsAt: string;
   manageToken: string;
+  /** Base URL del sito che ha ricevuto la prenotazione (da request host). */
+  appUrl: string;
 };
 
 function serverEnv(name: string): string | undefined {
@@ -54,13 +57,13 @@ export async function sendBookingConfirmationEmail(input: BookingEmail): Promise
     return;
   }
 
-  const appUrl = (serverEnv("APP_URL") ?? "").replace(/\/$/, "");
+  const appUrl = input.appUrl.replace(/\/$/, "");
   const manageUrl = appUrl ? `${appUrl}/appuntamento/${input.manageToken}` : null;
   const when = formatWhen(input.startsAt, input.endsAt);
 
   const html = [
     `<p>Ciao ${escapeHtml(input.clientName)},</p>`,
-    `<p>la tua prenotazione <strong>${escapeHtml(input.serviceName)}</strong> è confermata:</p>`,
+    `<p>la tua prenotazione <strong>${escapeHtml(input.serviceName)}</strong> presso <strong>${escapeHtml(input.studioName)}</strong> è confermata:</p>`,
     `<p><strong style="text-transform:capitalize">${escapeHtml(when)}</strong></p>`,
     manageUrl
       ? `<p>Gestisci l'appuntamento (sposta/cancella) da qui:<br><a href="${manageUrl}">${manageUrl}</a></p>`
@@ -81,7 +84,7 @@ export async function sendBookingConfirmationEmail(input: BookingEmail): Promise
       body: JSON.stringify({
         from,
         to: input.to,
-        subject: `Conferma prenotazione — ${input.serviceName}`,
+        subject: `Conferma prenotazione — ${input.studioName}`,
         html,
       }),
     });

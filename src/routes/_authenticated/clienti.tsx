@@ -6,14 +6,13 @@ import { toast } from "sonner";
 import { Phone, Search, Trash2 } from "lucide-react";
 
 import { StaffShell } from "@/components/staff-shell";
-import { BRAND_NAME } from "@/lib/brand";
 import { deleteClient, listClients } from "@/lib/staff.functions";
 import { formatDateShort } from "@/lib/time";
 
 export const Route = createFileRoute("/_authenticated/clienti")({
   head: () => ({
     meta: [
-      { title: `Clienti — ${BRAND_NAME}` },
+      { title: "Clienti" },
       { name: "description", content: "Rubrica clienti con storico visite." },
       { name: "robots", content: "noindex" },
     ],

@@ -3,14 +3,14 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { BRAND_NAME } from "@/lib/brand";
+import { useBrand, useDocTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: `Accesso staff — ${BRAND_NAME}` },
-      { name: "description", content: "Area riservata a nail artist e proprietario." },
+      { title: "Accesso staff" },
+      { name: "description", content: "Area riservata allo staff dello studio." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -19,6 +19,8 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
+  const brand = useBrand();
+  useDocTitle("Accesso staff");
   const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "reset">(() =>
     typeof window !== "undefined" && window.location.hash.includes("type=recovery")
       ? "reset"
@@ -100,7 +102,7 @@ function AuthPage() {
     <div className="gradient-blush flex min-h-screen items-center justify-center px-5 py-12">
       <div className="surface-card w-full max-w-md p-8">
         <Link to="/" className="eyebrow">
-          ← {BRAND_NAME}
+          ← {brand.name}
         </Link>
         <h1 className="mt-4 font-display text-4xl">
           {mode === "signin" && "Area riservata"}
@@ -108,9 +110,7 @@ function AuthPage() {
           {mode === "forgot" && "Recupera password"}
           {mode === "reset" && "Nuova password"}
         </h1>
-        <p className="mt-2 text-sm text-muted-foreground">
-          Riservata alla nail artist e al proprietario dello studio.
-        </p>
+        <p className="mt-2 text-sm text-muted-foreground">Riservata allo staff dello studio.</p>
 
         <div className="mt-7 space-y-3">
           {mode === "signup" && (

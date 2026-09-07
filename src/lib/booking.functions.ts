@@ -1,7 +1,7 @@
 import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
-import { getTenantId } from "./tenant";
+import { getTenant, getTenantId, requestBaseUrl } from "./tenant";
 import { dayKey, weekdayOf, zonedToUtc } from "./time";
 
 /**
@@ -32,6 +32,19 @@ export const getStudioAndServices = createServerFn({ method: "GET" }).handler(as
       .order("sort_order"),
   ]);
   return { studio, services: services ?? [] };
+});
+
+/** Dati pubblici dello studio corrente (tenant by hostname). Per loader root: tema + brand. */
+export const getPublicStudio = createServerFn({ method: "GET" }).handler(async () => {
+  const sb = await admin();
+  const studioId = await getTenantId();
+  const { data: studio } = await sb
+    .from("studios")
+    .select("id, slug, name, about, address, phone, instagram, theme, brand")
+    .eq("id", studioId)
+    .maybeSingle();
+  if (!studio) throw new Error("Studio non configurato.");
+  return { studio };
 });
 
 export const getMonthAvailability = createServerFn({ method: "POST" })
@@ -169,7 +182,8 @@ export const createBooking = createServerFn({ method: "POST" })
   .inputValidator((input: z.input<typeof bookingSchema>) => bookingSchema.parse(input))
   .handler(async ({ data }) => {
     const sb = await admin();
-    const studioId = await getTenantId();
+    const tenant = await getTenant();
+    const studioId = tenant.id;
     const { data: service } = await sb
       .from("services")
       .select("*")
@@ -227,9 +241,11 @@ export const createBooking = createServerFn({ method: "POST" })
         to: data.email,
         clientName: data.name,
         serviceName: service.name as string,
+        studioName: tenant.name,
         startsAt: appointment.starts_at as string,
         endsAt: appointment.ends_at as string,
         manageToken: appointment.manage_token as string,
+        appUrl: await requestBaseUrl(),
       });
     }
 

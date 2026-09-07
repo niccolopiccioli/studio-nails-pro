@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { CalendarCheck, CalendarX2, Clock3, Phone, Sparkles } from "lucide-react";
 
 import { SiteFooter, SiteHeader } from "@/components/site-header";
-import { BRAND_NAME } from "@/lib/brand";
+import { useDocTitle } from "@/lib/brand";
 import { BookingCalendar } from "@/components/booking-calendar";
 import {
   cancelBookingByToken,
@@ -20,10 +20,10 @@ import { dayKey, formatDateLong, formatPrice, formatTime } from "@/lib/time";
 export const Route = createFileRoute("/appuntamento/$token")({
   head: () => ({
     meta: [
-      { title: `Il tuo appuntamento — ${BRAND_NAME}` },
+      { title: "Il tuo appuntamento" },
       {
         name: "description",
-        content: `Consulta, sposta o cancella il tuo appuntamento da ${BRAND_NAME}`,
+        content: "Consulta, sposta o cancella il tuo appuntamento.",
       },
       { name: "robots", content: "noindex" },
     ],
@@ -32,6 +32,7 @@ export const Route = createFileRoute("/appuntamento/$token")({
 });
 
 function AppointmentPage() {
+  useDocTitle("Il tuo appuntamento");
   const { token } = Route.useParams();
   const qc = useQueryClient();
 

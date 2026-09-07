@@ -129,15 +129,15 @@ Tabelle: `studios`, `profiles`, `user_roles` (`owner` | `artist`), `services`, `
 
 ## Multisito: più frontend, stesso backend
 
-Stesso codice, un deploy per sito. Ogni sito punta allo stesso progetto Supabase e serve uno studio diverso, con tema e brand propri.
+Stesso codice, un deploy per sito. Ogni sito punta allo stesso progetto Supabase e serve uno studio diverso, con tema e brand propri — **zero env per-sito**.
 
-- **Tenant:** `src/lib/tenant.ts` risolve lo studio da `STUDIO_SLUG` (server-side, mai dal client). Senza, fallback allo studio storico. Il primo utente *dello studio* diventa owner.
-- **Tema:** `VITE_THEME` (`nails` default, `estetica` = palette salvia/botanico via `[data-theme]` in `src/styles.css`). Nuova palette = solo override di token.
-- **Brand:** `VITE_BRAND_*` (nome, tagline, hero, CTA, rating, didascalie portfolio — vedi `.env.example`). Contenuti veri (servizi, orari, contatti) dal DB.
-- **Secondo sito pronto:** migrazione `20260908000000_seed_estetica.sql` crea lo studio `estetica-pura`; deploy con l'esempio in `.env.example`.
+- **Tenant runtime:** `src/lib/tenant.ts` risolve lo studio dall'hostname (match su `studios.domains`, altrimenti slug contenuto nell'host). Override `STUDIO_SLUG` solo per il locale. Lo slug non arriva mai dal client. Il primo utente *dello studio* diventa owner.
+- **Tema runtime:** `studios.theme` (`nails` default, `estetica` = font Fraunces + palette salvia/botanico via `[data-theme]`), applicato pre-pittura da loader root. Nuova palette = solo override di token.
+- **Brand runtime:** `studios.brand` (JSON: tagline, hero, CTA, rating, badge, didascalie) via context `useBrand()`; SEO dinamica con `useDocTitle()`. Servizi/orari/contatti già dal DB.
+- **Email runtime:** link e nome studio derivati dalla request (`requestBaseUrl()`), non da `APP_URL`.
+- **Deploy:** `vercel.json` contiene le env pubbliche condivise (solo `SUPABASE_SERVICE_ROLE_KEY` da dashboard per progetto). Nuovo sito = riga in `studios` (theme/brand/domains) + nuovo progetto Vercel dallo stesso repo.
 - **Isolamento:** ogni query è filtrata per `studio_id` + RLS. Nota: le policy di lettura pubblica (`services`, `availability_rules`, `closures`, `studios`) usano `using (true)`, quindi i listini sono leggibili cross-studio via API anon — accettabile (dati pubblici), da stringere se serve.
 - **Foto:** per ora condivise tra i siti; shoot dedicato per vertical come step futuro.
-- **Nuovo sito in breve:** nuova riga in `studios` (+ servizi/orari) → nuovo deploy con `STUDIO_SLUG`, `VITE_THEME`, `VITE_BRAND_*`, `APP_URL`, `EMAIL_FROM`.
 
 ## PWA
 

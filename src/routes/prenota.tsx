@@ -6,7 +6,7 @@ import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Check, Loader2, Pencil } from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
-import { BRAND_NAME } from "@/lib/brand";
+import { useDocTitle } from "@/lib/brand";
 import { BookingCalendar } from "@/components/booking-calendar";
 import {
   createBooking,
@@ -22,13 +22,13 @@ export const Route = createFileRoute("/prenota")({
 
   head: () => ({
     meta: [
-      { title: `Prenota online — ${BRAND_NAME}` },
+      { title: "Prenota online" },
       {
         name: "description",
         content:
           "Scegli il trattamento, il giorno e l'orario disponibile. Prenotazione immediata senza creare un account.",
       },
-      { property: "og:title", content: `Prenota online — ${BRAND_NAME}` },
+      { property: "og:title", content: "Prenota online" },
       {
         property: "og:description",
         content: "Disponibilità in tempo reale e conferma immediata.",
@@ -53,6 +53,7 @@ const ADVANCE_DELAY = 420;
 function BookingPage() {
   const { servizio } = Route.useSearch();
   const navigate = useNavigate();
+  useDocTitle("Prenota online");
 
   const fetchStudio = useServerFn(getStudioAndServices);
   const fetchMonth = useServerFn(getMonthAvailability);
@@ -162,11 +163,7 @@ function BookingPage() {
           className={dir === 1 ? "animate-wizard-next mt-6" : "animate-wizard-back mt-6"}
         >
           {step === 1 && (
-            <StepShell
-              n={1}
-              title="Scegli il trattamento"
-              subtitle="Cosa facciamo oggi alle tue mani?"
-            >
+            <StepShell n={1} title="Scegli il trattamento" subtitle="Cosa facciamo oggi per te?">
               <div className="grid gap-3 sm:grid-cols-2">
                 {services.map((s, i) => {
                   const active = s.id === serviceId;

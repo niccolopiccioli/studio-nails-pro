@@ -2,7 +2,7 @@ import { createServerFn } from "@tanstack/react-start";
 import { z } from "zod";
 
 import { requireSupabaseAuth } from "@/integrations/supabase/auth-middleware";
-import { getTenantId } from "./tenant";
+import { getTenant, getTenantId, requestBaseUrl } from "./tenant";
 import { zonedToUtc } from "./time";
 
 const uuid = z.string().uuid();
@@ -241,7 +241,8 @@ export const createAppointmentManual = createServerFn({ method: "POST" })
     manualAppointmentSchema.parse(input),
   )
   .handler(async ({ data, context }) => {
-    const studioId = await getTenantId();
+    const tenant = await getTenant();
+    const studioId = tenant.id;
     const { data: service } = await context.supabase
       .from("services")
       .select("id, name, duration_minutes, price_cents")
@@ -299,9 +300,11 @@ export const createAppointmentManual = createServerFn({ method: "POST" })
         to: data.email,
         clientName: data.name,
         serviceName: service.name as string,
+        studioName: tenant.name,
         startsAt: startsAt.toISOString(),
         endsAt: endsAt.toISOString(),
         manageToken: appointment.manage_token as string,
+        appUrl: await requestBaseUrl(),
       });
     }
 

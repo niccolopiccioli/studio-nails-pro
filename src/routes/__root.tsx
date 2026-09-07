@@ -7,19 +7,21 @@ import {
   HeadContent,
   Scripts,
 } from "@tanstack/react-router";
-import { useEffect, type ReactNode } from "react";
+import { useEffect, useLayoutEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
-import { BRAND_DESC, BRAND_NAME, BRAND_TAGLINE, THEME } from "@/lib/brand";
+import { BrandProvider, brandFromStudio, useBrand, type Brand } from "@/lib/brand";
+import { getPublicStudio } from "@/lib/booking.functions";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
 
 function NotFoundComponent() {
+  const { name } = useBrand();
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
       <div className="max-w-md text-center">
-        <p className="eyebrow">{BRAND_NAME}</p>
+        <p className="eyebrow">{name}</p>
         <h1 className="mt-3 font-display text-6xl">404</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           La pagina che cerchi non esiste o è stata spostata.
@@ -72,15 +74,27 @@ function ErrorComponent({ error, reset }: { error: Error; reset: () => void }) {
 }
 
 export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()({
+  loader: async () => {
+    try {
+      const { studio } = await getPublicStudio();
+      return { brand: brandFromStudio(studio) };
+    } catch {
+      const { DEFAULT_BRAND } = await import("@/lib/brand");
+      return { brand: DEFAULT_BRAND };
+    }
+  },
   head: () => ({
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: `${BRAND_NAME} — ${BRAND_TAGLINE}` },
-      { name: "description", content: BRAND_DESC },
+      { title: "Prenota online" },
+      {
+        name: "description",
+        content: "Prenota online i tuoi trattamenti di bellezza, senza account.",
+      },
       { name: "theme-color", content: "#F7F1E7" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: BRAND_NAME },
+      { name: "apple-mobile-web-app-title", content: "Prenota" },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -106,7 +120,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="it" data-theme={THEME === "nails" ? undefined : THEME}>
+    <html lang="it">
       <head>
         <HeadContent />
       </head>
@@ -120,7 +134,18 @@ function RootShell({ children }: { children: ReactNode }) {
 
 function RootComponent() {
   const { queryClient } = Route.useRouteContext();
+  const { brand } = Route.useLoaderData() as { brand: Brand };
   const router = useRouter();
+
+  // Tema per-sito prima della prima pittura (niente flash del tema sbagliato).
+  useLayoutEffect(() => {
+    const theme = brand.theme === "estetica" ? "estetica" : "nails";
+    if (theme === "nails") document.documentElement.removeAttribute("data-theme");
+    else document.documentElement.setAttribute("data-theme", theme);
+    document
+      .querySelector('meta[name="theme-color"]')
+      ?.setAttribute("content", theme === "estetica" ? "#EFF4EC" : "#F7F1E7");
+  }, [brand.theme]);
 
   useEffect(() => {
     const { data } = supabase.auth.onAuthStateChange((event) => {
@@ -133,8 +158,10 @@ function RootComponent() {
 
   return (
     <QueryClientProvider client={queryClient}>
-      {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
-      <Outlet />
+      <BrandProvider value={brand}>
+        {/* Required: nested routes render here. Removing <Outlet /> breaks all child routes. */}
+        <Outlet />
+      </BrandProvider>
       <Toaster position="top-center" />
     </QueryClientProvider>
   );

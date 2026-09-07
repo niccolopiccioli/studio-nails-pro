@@ -1,12 +1,12 @@
 import { createFileRoute, Link } from "@tanstack/react-router";
 
 import { SiteFooter, SiteHeader } from "@/components/site-header";
-import { BRAND_NAME } from "@/lib/brand";
+import { useDocTitle } from "@/lib/brand";
 
 export const Route = createFileRoute("/termini")({
   head: () => ({
     meta: [
-      { title: `Termini di servizio — ${BRAND_NAME}` },
+      { title: "Termini di servizio" },
       {
         name: "description",
         content: "Condizioni d'uso della piattaforma di prenotazione.",
@@ -17,6 +17,7 @@ export const Route = createFileRoute("/termini")({
 });
 
 function TermsPage() {
+  useDocTitle("Termini di servizio");
   return (
     <div className="min-h-screen">
       <SiteHeader />

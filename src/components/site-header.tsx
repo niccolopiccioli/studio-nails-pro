@@ -2,7 +2,7 @@ import { Link } from "@tanstack/react-router";
 import { ArrowRight, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
-import { BRAND_FIRST, BRAND_INITIAL, BRAND_NAME, BRAND_REST } from "@/lib/brand";
+import { splitName, useBrand } from "@/lib/brand";
 
 const links = [
   { to: "/", label: "Home" },
@@ -10,6 +10,8 @@ const links = [
 ] as const;
 
 export function SiteHeader() {
+  const brand = useBrand();
+  const { first, rest, initial } = splitName(brand.name);
   const [open, setOpen] = useState(false);
   const [scrolled, setScrolled] = useState(false);
 
@@ -41,19 +43,15 @@ export function SiteHeader() {
           <Link
             to="/"
             className="group flex items-center gap-2.5"
-            aria-label={`${BRAND_NAME} — home`}
+            aria-label={`${brand.name} — home`}
           >
             <span className="silk flex size-9 items-center justify-center rounded-full bg-primary font-display text-lg italic text-primary-foreground group-hover:scale-105">
-              {BRAND_INITIAL}
+              {initial}
             </span>
             <span className="flex items-baseline gap-1.5">
-              <span className="font-display text-lg tracking-[0.14em] uppercase">
-                {BRAND_FIRST}
-              </span>
-              {BRAND_REST && (
-                <span className="font-display text-lg italic text-muted-foreground">
-                  {BRAND_REST}
-                </span>
+              <span className="font-display text-lg tracking-[0.14em] uppercase">{first}</span>
+              {rest && (
+                <span className="font-display text-lg italic text-muted-foreground">{rest}</span>
               )}
             </span>
           </Link>
@@ -134,6 +132,7 @@ export function SiteHeader() {
 }
 
 export function SiteFooter() {
+  const brand = useBrand();
   return (
     <footer className="gradient-espresso relative mt-10 overflow-hidden text-cream md:mt-14">
       <div className="pointer-events-none absolute -top-24 right-0 size-72 rounded-full bg-blush/15 blur-3xl" />
@@ -156,9 +155,12 @@ export function SiteFooter() {
           <div>
             <p className="eyebrow !text-cream/50">Contatti</p>
             <div className="mt-3 space-y-2 text-cream/80">
-              <p>Via della Bellezza 12, Milano</p>
-              <a href="tel:+393331234567" className="silk block w-fit hover:text-cream">
-                +39 333 1234567
+              <p>{brand.address}</p>
+              <a
+                href={`tel:${brand.phone.replace(/\s/g, "")}`}
+                className="silk block w-fit hover:text-cream"
+              >
+                {brand.phone}
               </a>
             </div>
           </div>
@@ -177,7 +179,7 @@ export function SiteFooter() {
 
         <div className="mt-10 border-t border-cream/15 pt-5 text-center text-xs text-cream/50">
           <p>
-            © {new Date().getFullYear()} {BRAND_NAME}
+            © {new Date().getFullYear()} {brand.name}
           </p>
         </div>
       </div>

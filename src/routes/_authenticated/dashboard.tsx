@@ -6,7 +6,6 @@ import { toast } from "sonner";
 import { ChevronLeft, ChevronRight, Phone, Plus, StickyNote } from "lucide-react";
 
 import { StaffShell, StatCard } from "@/components/staff-shell";
-import { BRAND_NAME } from "@/lib/brand";
 import { useStaff } from "@/hooks/use-staff";
 import {
   createAppointmentManual,
@@ -27,7 +26,7 @@ import {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: `Agenda — ${BRAND_NAME}` },
+      { title: "Agenda" },
       { name: "description", content: "Agenda giornaliera e settimanale dello studio." },
       { name: "robots", content: "noindex" },
     ],

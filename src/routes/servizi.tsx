@@ -7,17 +7,19 @@ import work2 from "@/assets/work-2.jpg";
 import work3 from "@/assets/work-3.jpg";
 import work4 from "@/assets/work-4.jpg";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
-import { BRAND_DESC, BRAND_NAME } from "@/lib/brand";
+import { useDocTitle } from "@/lib/brand";
 import { getStudioAndServices } from "@/lib/booking.functions";
 import { formatDuration, formatPrice } from "@/lib/time";
 
 export const Route = createFileRoute("/servizi")({
   head: () => ({
     meta: [
-      { title: `Servizi e listino — ${BRAND_NAME}` },
-      { name: "description", content: BRAND_DESC },
-      { property: "og:title", content: `Servizi e listino — ${BRAND_NAME}` },
-      { property: "og:description", content: BRAND_DESC },
+      { title: "Servizi e listino" },
+      {
+        name: "description",
+        content: "Tutti i trattamenti con prezzo e durata. Prenota online senza account.",
+      },
+      { property: "og:title", content: "Servizi e listino" },
     ],
   }),
   component: ServicesPage,
@@ -26,6 +28,7 @@ export const Route = createFileRoute("/servizi")({
 const photos = [work1, work2, work3, work4];
 
 function ServicesPage() {
+  useDocTitle("Servizi e listino");
   const fetchData = useServerFn(getStudioAndServices);
   const { data, isLoading } = useQuery({ queryKey: ["studio"], queryFn: () => fetchData() });
 

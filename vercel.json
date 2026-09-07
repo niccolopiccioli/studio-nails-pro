@@ -1,0 +1,11 @@
+{
+  "$schema": "https://openapi.vercel.sh/vercel.json",
+  "buildCommand": "npm run build",
+  "env": {
+    "NITRO_PRESET": "vercel",
+    "SUPABASE_URL": "https://ffzogensanjwybswylei.supabase.co",
+    "VITE_SUPABASE_URL": "https://ffzogensanjwybswylei.supabase.co",
+    "SUPABASE_PUBLISHABLE_KEY": "sb_publishable_781J_eX9b2MnNtvWFIP8EA_JSd6UdDz",
+    "VITE_SUPABASE_PUBLISHABLE_KEY": "sb_publishable_781J_eX9b2MnNtvWFIP8EA_JSd6UdDz"
+  }
+}

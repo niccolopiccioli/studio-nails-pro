@@ -1,50 +1,107 @@
+import { createContext, useContext, useEffect } from "react";
+
 /**
- * Configurazione brand/tema del deploy (multisito, stesso backend).
- * Ogni sito è un deploy con le sue VITE_* : nome, testi, immagini, tema.
- * Default = Studio Nails (deploy esistente invariato).
+ * Brand runtime del sito corrente (multisito, stesso backend).
+ * Valori dal DB (studios.brand) con fallback ai default nails.
+ * Niente più VITE_BRAND_*: nuovo sito = riga DB, zero env per-sito.
  */
-function vite(key: string): string | undefined {
-  try {
-    const v: unknown = import.meta.env[key];
-    return typeof v === "string" && v.trim() ? v.trim() : undefined;
-  } catch {
-    return undefined;
-  }
+export type Brand = {
+  theme: string;
+  name: string;
+  tagline: string;
+  desc: string;
+  eyebrow: string;
+  hero1: string;
+  hero2: string;
+  hero3: string;
+  cta1: string;
+  cta2: string;
+  rating: string;
+  badgeK: string;
+  badgeV: string;
+  workLabels: string[];
+  address: string;
+  phone: string;
+};
+
+export const DEFAULT_BRAND: Brand = {
+  theme: "nails",
+  name: "Studio Nails",
+  tagline: "Nail art su misura",
+  desc: "Atelier di nail art a Milano: manicure, gel e nail art su misura.",
+  eyebrow: "Milano · Atelier su appuntamento",
+  hero1: "La cura",
+  hero2: "delle mani,",
+  hero3: "come un rituale.",
+  cta1: "Le tue mani",
+  cta2: "se lo meritano.",
+  rating: "4.9 · 300+ recensioni",
+  badgeK: "Da oltre 8 anni",
+  badgeV: "+1.200 clienti",
+  workLabels: ["Nude couture", "Rosé minimal", "Dettagli oro", "French moderno"],
+  address: "Via della Bellezza 12, Milano",
+  phone: "+39 333 1234567",
+};
+
+type StudioRow = {
+  name?: unknown;
+  theme?: unknown;
+  brand?: unknown;
+  address?: unknown;
+  phone?: unknown;
+} | null;
+
+function str(v: unknown, fb: string): string {
+  return typeof v === "string" && v.trim() ? v : fb;
 }
 
-export const THEME = vite("VITE_THEME") ?? "nails";
+function strArray(v: unknown, fb: string[]): string[] {
+  if (!Array.isArray(v)) return fb;
+  const parts = v.filter((x): x is string => typeof x === "string" && !!x.trim());
+  return parts.length > 0 ? parts : fb;
+}
 
-export const BRAND_NAME = vite("VITE_BRAND_NAME") ?? "Studio Nails";
-export const BRAND_TAGLINE = vite("VITE_BRAND_TAGLINE") ?? "Nail art su misura";
-export const BRAND_DESC =
-  vite("VITE_BRAND_DESC") ?? "Atelier di nail art a Milano: manicure, gel e nail art su misura.";
-export const BRAND_EYEBROW = vite("VITE_BRAND_EYEBROW") ?? "Milano · Atelier su appuntamento";
+export function brandFromStudio(studio: StudioRow): Brand {
+  const b = (studio?.brand ?? {}) as Record<string, unknown>;
+  return {
+    theme: str(studio?.theme, DEFAULT_BRAND.theme),
+    name: str(studio?.name, DEFAULT_BRAND.name),
+    tagline: str(b["tagline"], DEFAULT_BRAND.tagline),
+    desc: str(b["desc"], DEFAULT_BRAND.desc),
+    eyebrow: str(b["eyebrow"], DEFAULT_BRAND.eyebrow),
+    hero1: str(b["hero"] && (b["hero"] as unknown[])[0], DEFAULT_BRAND.hero1),
+    hero2: str(b["hero"] && (b["hero"] as unknown[])[1], DEFAULT_BRAND.hero2),
+    hero3: str(b["hero"] && (b["hero"] as unknown[])[2], DEFAULT_BRAND.hero3),
+    cta1: str(b["cta"] && (b["cta"] as unknown[])[0], DEFAULT_BRAND.cta1),
+    cta2: str(b["cta"] && (b["cta"] as unknown[])[1], DEFAULT_BRAND.cta2),
+    rating: str(b["rating"], DEFAULT_BRAND.rating),
+    badgeK: str(b["badgeK"], DEFAULT_BRAND.badgeK),
+    badgeV: str(b["badgeV"], DEFAULT_BRAND.badgeV),
+    workLabels: strArray(b["workLabels"], DEFAULT_BRAND.workLabels).slice(0, 4),
+    address: str(studio?.address, DEFAULT_BRAND.address),
+    phone: str(studio?.phone, DEFAULT_BRAND.phone),
+  };
+}
 
-const [first, ...rest] = BRAND_NAME.split(/\s+/);
-export const BRAND_FIRST = (first ?? BRAND_NAME).toUpperCase();
-export const BRAND_REST = rest.join(" ");
-export const BRAND_INITIAL = (first ?? "S").charAt(0).toUpperCase();
+/** "Estetica Pura" → { first: "ESTETICA", rest: "Pura", initial: "E" } */
+export function splitName(name: string): { first: string; rest: string; initial: string } {
+  const [first, ...rest] = name.split(/\s+/);
+  const head = first ?? name;
+  return { first: head.toUpperCase(), rest: rest.join(" "), initial: head.charAt(0).toUpperCase() };
+}
 
-/** Hero: tre righe (titolo, seconda riga, accento corsivo). */
-export const BRAND_HERO_1 = vite("VITE_BRAND_HERO_1") ?? "La cura";
-export const BRAND_HERO_2 = vite("VITE_BRAND_HERO_2") ?? "delle mani,";
-export const BRAND_HERO_3 = vite("VITE_BRAND_HERO_3") ?? "come un rituale.";
+const BrandContext = createContext<Brand>(DEFAULT_BRAND);
 
-/** CTA finale: due righe. */
-export const BRAND_CTA_1 = vite("VITE_BRAND_CTA_1") ?? "Le tue mani";
-export const BRAND_CTA_2 = vite("VITE_BRAND_CTA_2") ?? "se lo meritano.";
+export const BrandProvider = BrandContext.Provider;
 
-export const BRAND_RATING = vite("VITE_BRAND_RATING") ?? "4.9 · 300+ recensioni";
-export const BRAND_BADGE_K = vite("VITE_BRAND_BADGE_K") ?? "Da oltre 8 anni";
-export const BRAND_BADGE_V = vite("VITE_BRAND_BADGE_V") ?? "+1.200 clienti";
+export function useBrand(): Brand {
+  return useContext(BrandContext);
+}
 
-const DEFAULT_WORK_LABELS = ["Nude couture", "Rosé minimal", "Dettagli oro", "French moderno"];
-export const BRAND_WORK_LABELS: string[] = (() => {
-  const raw = vite("VITE_BRAND_WORK_LABELS");
-  if (!raw) return DEFAULT_WORK_LABELS;
-  const parts = raw
-    .split(",")
-    .map((s) => s.trim())
-    .filter(Boolean);
-  return [...parts, ...DEFAULT_WORK_LABELS].slice(0, 4);
-})();
+/** Titolo scheda dinamico per-sito (il meta statico resta come fallback). */
+export function useDocTitle(title: string): void {
+  const { name } = useBrand();
+  useEffect(() => {
+    document.title = `${title} — ${name}`;
+  }, [title, name]);
+}

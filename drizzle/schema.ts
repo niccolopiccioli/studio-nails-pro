@@ -3,6 +3,7 @@
 import {
   boolean,
   integer,
+  jsonb,
   pgEnum,
   pgTable,
   text,
@@ -22,6 +23,9 @@ export const studios = pgTable("studios", {
   address: text("address"),
   instagram: text("instagram"),
   about: text("about"),
+  theme: text("theme").notNull().default("nails"),
+  brand: jsonb("brand").notNull().default({}),
+  domains: text("domains").array().notNull().default([]),
   slotIntervalMinutes: integer("slot_interval_minutes").notNull().default(30),
   createdAt: timestamp("created_at", { withTimezone: true }).notNull().defaultNow(),
 });

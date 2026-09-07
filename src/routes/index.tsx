@@ -11,31 +11,19 @@ import work2 from "@/assets/work-2.jpg";
 import work3 from "@/assets/work-3.jpg";
 import work4 from "@/assets/work-4.jpg";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
-import {
-  BRAND_BADGE_K,
-  BRAND_BADGE_V,
-  BRAND_CTA_1,
-  BRAND_CTA_2,
-  BRAND_DESC,
-  BRAND_EYEBROW,
-  BRAND_HERO_1,
-  BRAND_HERO_2,
-  BRAND_HERO_3,
-  BRAND_NAME,
-  BRAND_RATING,
-  BRAND_TAGLINE,
-  BRAND_WORK_LABELS,
-} from "@/lib/brand";
+import { useBrand, useDocTitle } from "@/lib/brand";
 import { getStudioAndServices } from "@/lib/booking.functions";
 import { formatDuration, formatPrice } from "@/lib/time";
 
 export const Route = createFileRoute("/")({
   head: () => ({
     meta: [
-      { title: `${BRAND_NAME} — ${BRAND_TAGLINE}` },
-      { name: "description", content: BRAND_DESC },
-      { property: "og:title", content: `${BRAND_NAME} — ${BRAND_TAGLINE}` },
-      { property: "og:description", content: BRAND_DESC },
+      { title: "Prenota online" },
+      {
+        name: "description",
+        content: "Prenota online i tuoi trattamenti di bellezza, senza account.",
+      },
+      { property: "og:title", content: "Prenota online" },
     ],
   }),
   component: Home,
@@ -69,8 +57,10 @@ function Home() {
   const fetchData = useServerFn(getStudioAndServices);
   const { data } = useQuery({ queryKey: ["studio"], queryFn: () => fetchData() });
   const services = data?.services ?? [];
-  const studioName = data?.studio?.name ?? BRAND_NAME;
-  const address = data?.studio?.address ?? "Via della Bellezza 12, Milano";
+  const brand = useBrand();
+  useDocTitle(`${brand.name} — ${brand.tagline}`);
+  const studioName = data?.studio?.name ?? brand.name;
+  const address = data?.studio?.address ?? brand.address;
   const marquee =
     services.length > 0
       ? [...services.slice(0, 5).map((s) => s.name), "Prenota senza account"]
@@ -90,12 +80,12 @@ function Home() {
           <div className="animate-rise">
             <p className="eyebrow inline-flex items-center gap-3">
               <span className="inline-block h-px w-10 bg-primary/50" />
-              {BRAND_EYEBROW}
+              {brand.eyebrow}
             </p>
             <h1 className="mt-5 font-display text-6xl leading-[0.98] sm:text-7xl lg:text-8xl">
-              {BRAND_HERO_1}
-              <span className="block">{BRAND_HERO_2}</span>
-              <span className="block font-light italic text-primary">{BRAND_HERO_3}</span>
+              {brand.hero1}
+              <span className="block">{brand.hero2}</span>
+              <span className="block font-light italic text-primary">{brand.hero3}</span>
             </h1>
             <p className="mt-6 max-w-md text-base leading-relaxed text-muted-foreground">
               {data?.studio?.about ??
@@ -126,7 +116,7 @@ function Home() {
                     <Star key={i} className="size-3.5 fill-current" />
                   ))}
                 </span>
-                {BRAND_RATING}
+                {brand.rating}
               </span>
               <span className="inline-flex items-center gap-2">
                 <Clock className="size-4" /> Senza account
@@ -163,8 +153,8 @@ function Home() {
               className="animate-float-soft surface-card absolute -bottom-5 right-2 px-5 py-4 sm:right-6"
               style={{ animationDelay: "1.4s" }}
             >
-              <p className="eyebrow">{BRAND_BADGE_K}</p>
-              <p className="font-display text-3xl">{BRAND_BADGE_V}</p>
+              <p className="eyebrow">{brand.badgeK}</p>
+              <p className="font-display text-3xl">{brand.badgeV}</p>
             </div>
 
             <Link
@@ -222,10 +212,10 @@ function Home() {
         </Reveal>
         <div className="mt-10 grid grid-cols-2 gap-3 sm:gap-5 md:grid-cols-4">
           {[
-            { src: work1, label: BRAND_WORK_LABELS[0] ?? "Look 01", tall: true },
-            { src: work2, label: BRAND_WORK_LABELS[1] ?? "Look 02", tall: false },
-            { src: work3, label: BRAND_WORK_LABELS[2] ?? "Look 03", tall: false },
-            { src: work4, label: BRAND_WORK_LABELS[3] ?? "Look 04", tall: true },
+            { src: work1, label: brand.workLabels[0] ?? "Look 01", tall: true },
+            { src: work2, label: brand.workLabels[1] ?? "Look 02", tall: false },
+            { src: work3, label: brand.workLabels[2] ?? "Look 03", tall: false },
+            { src: work4, label: brand.workLabels[3] ?? "Look 04", tall: true },
           ].map((w, i) => (
             <Reveal key={w.src} delay={i * 90} className={w.tall ? "md:-mt-8" : "md:mt-8"}>
               <figure className="silk group relative overflow-hidden rounded-[1.75rem] hover:shadow-[var(--shadow-lift)]">
@@ -370,14 +360,14 @@ function Home() {
             <div className="pointer-events-none absolute -top-20 left-1/2 size-72 -translate-x-1/2 rounded-full bg-blush/20 blur-3xl" />
             <p className="eyebrow !text-cream/70">Ultimo passo</p>
             <h2 className="mx-auto mt-4 max-w-2xl font-display text-5xl leading-[1.02] md:text-7xl">
-              {BRAND_CTA_1} <span className="italic opacity-90">{BRAND_CTA_2}</span>
+              {brand.cta1} <span className="italic opacity-90">{brand.cta2}</span>
             </h2>
             <p className="mx-auto mt-5 flex max-w-md flex-wrap items-center justify-center gap-x-5 gap-y-2 text-sm text-cream/75">
               <span className="inline-flex items-center gap-2">
                 <MapPin className="size-4" /> {address}
               </span>
               <span className="inline-flex items-center gap-2">
-                <Phone className="size-4" /> {data?.studio?.phone ?? "+39 333 1234567"}
+                <Phone className="size-4" /> {data?.studio?.phone ?? brand.phone}
               </span>
             </p>
             <div className="mt-9 flex flex-wrap items-center justify-center gap-4">

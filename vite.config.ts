@@ -9,7 +9,7 @@ import { defineConfig } from "@lovable.dev/vite-tanstack-config";
 export default defineConfig({
   // Deploy target: Lovable sandbox forces cloudflare-module by itself.
   // Su Vercel impostare NITRO_PRESET=vercel nelle env del progetto.
-  nitro: { preset: process.env.NITRO_PRESET ?? "cloudflare-module" },
+  nitro: { preset: process.env["NITRO_PRESET"] ?? "cloudflare-module" },
   tanstackStart: {
     // Redirect TanStack Start's bundled server entry to src/server.ts (our SSR error wrapper).
     // nitro/vite builds from this
