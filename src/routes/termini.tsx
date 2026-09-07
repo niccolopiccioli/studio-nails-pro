@@ -46,8 +46,8 @@ function TermsPage() {
 
           <Section title="3. Ruoli privacy">
             <p>
-              Il <strong>centro estetico è Titolare</strong> dei dati dei propri clienti; la{" "}
-              <strong>piattaforma è Responsabile</strong> del trattamento e li usa solo per far
+              Il <strong>centro estetico è Titolare</strong> dei dati dei propri clienti;{" "}
+              <strong>Veluna è Responsabile</strong> del trattamento e li usa solo per far
               funzionare il servizio. Dettagli nell'
               <Link to="/privacy" className="underline underline-offset-4">
                 informativa privacy
@@ -68,7 +68,7 @@ function TermsPage() {
 
           <Section title="5. Responsabilità">
             <p>
-              Nei limiti consentiti dalla legge, la piattaforma non risponde di danni indiretti
+              Nei limiti consentiti dalla legge, Veluna non risponde di danni indiretti
               derivanti da uso, mancata disponibilità o errori del servizio, né della qualità dei
               trattamenti erogati dal centro estetico, che resta l'unico responsabile del rapporto
               con i propri clienti.

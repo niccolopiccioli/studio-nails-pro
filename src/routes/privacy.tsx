@@ -43,9 +43,9 @@ function PrivacyPage() {
               come vengono usati i tuoi dati per erogare il servizio prenotato.
             </p>
             <p className="mt-2">
-              <strong>Responsabile del trattamento</strong> è la piattaforma software che fornisce
-              lo strumento di prenotazione online: tratta i dati solo per conto del Titolare, per
-              far funzionare agenda e conferme, senza usarli per proprie finalità.
+              <strong>Responsabile del trattamento</strong> è <strong>Veluna</strong>, la piattaforma
+              software che fornisce lo strumento di prenotazione online: tratta i dati solo per conto
+              del Titolare, per far funzionare agenda e conferme, senza usarli per proprie finalità.
             </p>
           </Section>
 
