@@ -1,4 +1,5 @@
 export const TZ = "Europe/Rome";
+/** Legacy: usare getTenantId() da ./tenant (multisito). Tenuto per fallback deploy esistente. */
 export const STUDIO_ID = "11111111-1111-1111-1111-111111111111";
 
 function partsIn(date: Date, tz = TZ) {

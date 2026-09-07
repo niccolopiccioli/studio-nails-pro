@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { Trash2 } from "lucide-react";
 
 import { StaffShell } from "@/components/staff-shell";
+import { BRAND_NAME } from "@/lib/brand";
 import {
   addClosure,
   getAvailabilitySettings,
@@ -17,7 +18,7 @@ import { WEEKDAY_LABELS, formatDateLong } from "@/lib/time";
 export const Route = createFileRoute("/_authenticated/disponibilita")({
   head: () => ({
     meta: [
-      { title: "Disponibilità e chiusure — Studio Nails" },
+      { title: `Disponibilità e chiusure — ${BRAND_NAME}` },
       { name: "description", content: "Orari di apertura, pausa e giorni di chiusura." },
       { name: "robots", content: "noindex" },
     ],
@@ -34,7 +35,10 @@ function AvailabilityPage() {
   const addDay = useServerFn(addClosure);
   const delDay = useServerFn(removeClosure);
 
-  const { data } = useQuery({ queryKey: ["availability-settings"], queryFn: () => fetchSettings() });
+  const { data } = useQuery({
+    queryKey: ["availability-settings"],
+    queryFn: () => fetchSettings(),
+  });
   const [closureDay, setClosureDay] = useState("");
   const [closureReason, setClosureReason] = useState("");
 

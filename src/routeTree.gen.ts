@@ -13,7 +13,9 @@ import { Route as IndexRouteImport } from './routes/index'
 import { Route as AuthenticatedRouteRouteImport } from './routes/_authenticated/route'
 import { Route as AuthRouteImport } from './routes/auth'
 import { Route as PrenotaRouteImport } from './routes/prenota'
+import { Route as PrivacyRouteImport } from './routes/privacy'
 import { Route as ServiziRouteImport } from './routes/servizi'
+import { Route as TerminiRouteImport } from './routes/termini'
 import { Route as AuthenticatedClientiRouteImport } from './routes/_authenticated/clienti'
 import { Route as AuthenticatedDashboardRouteImport } from './routes/_authenticated/dashboard'
 import { Route as AuthenticatedDisponibilitaRouteImport } from './routes/_authenticated/disponibilita'
@@ -39,9 +41,19 @@ const PrenotaRoute = PrenotaRouteImport.update({
   path: '/prenota',
   getParentRoute: () => rootRouteImport,
 } as any)
+const PrivacyRoute = PrivacyRouteImport.update({
+  id: '/privacy',
+  path: '/privacy',
+  getParentRoute: () => rootRouteImport,
+} as any)
 const ServiziRoute = ServiziRouteImport.update({
   id: '/servizi',
   path: '/servizi',
+  getParentRoute: () => rootRouteImport,
+} as any)
+const TerminiRoute = TerminiRouteImport.update({
+  id: '/termini',
+  path: '/termini',
   getParentRoute: () => rootRouteImport,
 } as any)
 const AuthenticatedClientiRoute = AuthenticatedClientiRouteImport.update({
@@ -75,7 +87,9 @@ export interface FileRoutesByFullPath {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
+  '/privacy': typeof PrivacyRoute
   '/servizi': typeof ServiziRoute
+  '/termini': typeof TerminiRoute
   '/clienti': typeof AuthenticatedClientiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/disponibilita': typeof AuthenticatedDisponibilitaRoute
@@ -86,7 +100,9 @@ export interface FileRoutesByTo {
   '/': typeof IndexRoute
   '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
+  '/privacy': typeof PrivacyRoute
   '/servizi': typeof ServiziRoute
+  '/termini': typeof TerminiRoute
   '/clienti': typeof AuthenticatedClientiRoute
   '/dashboard': typeof AuthenticatedDashboardRoute
   '/disponibilita': typeof AuthenticatedDisponibilitaRoute
@@ -99,7 +115,9 @@ export interface FileRoutesById {
   '/_authenticated': typeof AuthenticatedRouteRouteWithChildren
   '/auth': typeof AuthRoute
   '/prenota': typeof PrenotaRoute
+  '/privacy': typeof PrivacyRoute
   '/servizi': typeof ServiziRoute
+  '/termini': typeof TerminiRoute
   '/_authenticated/clienti': typeof AuthenticatedClientiRoute
   '/_authenticated/dashboard': typeof AuthenticatedDashboardRoute
   '/_authenticated/disponibilita': typeof AuthenticatedDisponibilitaRoute
@@ -112,7 +130,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/prenota'
+    | '/privacy'
     | '/servizi'
+    | '/termini'
     | '/clienti'
     | '/dashboard'
     | '/disponibilita'
@@ -123,7 +143,9 @@ export interface FileRouteTypes {
     | '/'
     | '/auth'
     | '/prenota'
+    | '/privacy'
     | '/servizi'
+    | '/termini'
     | '/clienti'
     | '/dashboard'
     | '/disponibilita'
@@ -135,7 +157,9 @@ export interface FileRouteTypes {
     | '/_authenticated'
     | '/auth'
     | '/prenota'
+    | '/privacy'
     | '/servizi'
+    | '/termini'
     | '/_authenticated/clienti'
     | '/_authenticated/dashboard'
     | '/_authenticated/disponibilita'
@@ -148,7 +172,9 @@ export interface RootRouteChildren {
   AuthenticatedRouteRoute: typeof AuthenticatedRouteRouteWithChildren
   AuthRoute: typeof AuthRoute
   PrenotaRoute: typeof PrenotaRoute
+  PrivacyRoute: typeof PrivacyRoute
   ServiziRoute: typeof ServiziRoute
+  TerminiRoute: typeof TerminiRoute
   AppuntamentoTokenRoute: typeof AppuntamentoTokenRoute
 }
 
@@ -182,11 +208,25 @@ declare module '@tanstack/react-router' {
       preLoaderRoute: typeof PrenotaRouteImport
       parentRoute: typeof rootRouteImport
     }
+    '/privacy': {
+      id: '/privacy'
+      path: '/privacy'
+      fullPath: '/privacy'
+      preLoaderRoute: typeof PrivacyRouteImport
+      parentRoute: typeof rootRouteImport
+    }
     '/servizi': {
       id: '/servizi'
       path: '/servizi'
       fullPath: '/servizi'
       preLoaderRoute: typeof ServiziRouteImport
+      parentRoute: typeof rootRouteImport
+    }
+    '/termini': {
+      id: '/termini'
+      path: '/termini'
+      fullPath: '/termini'
+      preLoaderRoute: typeof TerminiRouteImport
       parentRoute: typeof rootRouteImport
     }
     '/_authenticated/clienti': {
@@ -249,7 +289,9 @@ const rootRouteChildren: RootRouteChildren = {
   AuthenticatedRouteRoute: AuthenticatedRouteRouteWithChildren,
   AuthRoute: AuthRoute,
   PrenotaRoute: PrenotaRoute,
+  PrivacyRoute: PrivacyRoute,
   ServiziRoute: ServiziRoute,
+  TerminiRoute: TerminiRoute,
   AppuntamentoTokenRoute: AppuntamentoTokenRoute,
 }
 export const routeTree = rootRouteImport

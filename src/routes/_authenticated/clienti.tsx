@@ -1,18 +1,20 @@
 import { createFileRoute } from "@tanstack/react-router";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
-import { Phone, Search } from "lucide-react";
+import { toast } from "sonner";
+import { Phone, Search, Trash2 } from "lucide-react";
 
-import { StaffShell, StatCard } from "@/components/staff-shell";
-import { listClients } from "@/lib/staff.functions";
-import { formatDateShort, formatPrice } from "@/lib/time";
+import { StaffShell } from "@/components/staff-shell";
+import { BRAND_NAME } from "@/lib/brand";
+import { deleteClient, listClients } from "@/lib/staff.functions";
+import { formatDateShort } from "@/lib/time";
 
 export const Route = createFileRoute("/_authenticated/clienti")({
   head: () => ({
     meta: [
-      { title: "Storico clienti — Studio Nails" },
-      { name: "description", content: "Storico clienti, visite e spesa totale." },
+      { title: `Clienti — ${BRAND_NAME}` },
+      { name: "description", content: "Rubrica clienti con storico visite." },
       { name: "robots", content: "noindex" },
     ],
   }),
@@ -21,44 +23,45 @@ export const Route = createFileRoute("/_authenticated/clienti")({
 
 function ClientsPage() {
   const fetchClients = useServerFn(listClients);
+  const removeFn = useServerFn(deleteClient);
+  const qc = useQueryClient();
   const { data, isLoading } = useQuery({ queryKey: ["clients"], queryFn: () => fetchClients() });
   const [q, setQ] = useState("");
 
+  const remove = useMutation({
+    mutationFn: (id: string) => removeFn({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      qc.invalidateQueries({ queryKey: ["appointments"] });
+      toast.success("Cliente eliminato definitivamente");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
+  // Piano free: rubrica base — nome, telefono, numero visite, ultima visita.
+  // Niente spesa, niente segmentazione, niente analisi.
   const rows = useMemo(() => {
     const clients = data?.clients ?? [];
     const appts = data?.appointments ?? [];
     return clients
       .map((c) => {
         const mine = appts.filter((a) => a.client_phone === c.phone && a.status !== "cancelled");
-        const total = mine.reduce((s, a) => s + a.price_cents, 0);
-        const last = mine.map((a) => a.starts_at).sort().at(-1) ?? null;
-        return { ...c, visits: mine.length, total, last };
+        const last =
+          mine
+            .map((a) => a.starts_at)
+            .sort()
+            .at(-1) ?? null;
+        return { ...c, visits: mine.length, last };
       })
       .filter(
-        (c) =>
-          !q ||
-          c.full_name.toLowerCase().includes(q.toLowerCase()) ||
-          c.phone.includes(q),
+        (c) => !q || c.full_name.toLowerCase().includes(q.toLowerCase()) || c.phone.includes(q),
       )
       .sort((a, b) => (b.last ?? "").localeCompare(a.last ?? ""));
   }, [data, q]);
 
-  const recurring = rows.filter((r) => r.visits > 1).length;
-
   return (
-    <StaffShell title="Clienti" subtitle="Storico e frequenza">
-      <div className="grid gap-3 sm:grid-cols-3">
-        <StatCard label="Clienti totali" value={String(rows.length)} />
-        <StatCard label="Ricorrenti" value={String(recurring)} hint="Più di una visita" />
-        <StatCard
-          label="Spesa media"
-          value={formatPrice(
-            rows.length ? Math.round(rows.reduce((s, r) => s + r.total, 0) / rows.length) : 0,
-          )}
-        />
-      </div>
-
-      <div className="surface-card mt-6 flex items-center gap-3 px-4 py-3">
+    <StaffShell title="Clienti" subtitle="Rubrica e storico visite">
+      <div className="surface-card flex items-center gap-3 px-4 py-3">
         <Search className="size-4 text-muted-foreground" />
         <input
           value={q}
@@ -67,6 +70,11 @@ function ClientsPage() {
           className="w-full bg-transparent text-sm outline-none"
         />
       </div>
+      {q && (
+        <p className="mt-3 text-xs text-muted-foreground">
+          {rows.length} {rows.length === 1 ? "cliente trovato" : "clienti trovati"}
+        </p>
+      )}
 
       <div className="mt-4 space-y-3">
         {isLoading && <p className="text-sm text-muted-foreground">Carico i clienti…</p>}
@@ -76,7 +84,10 @@ function ClientsPage() {
           </div>
         )}
         {rows.map((c) => (
-          <div key={c.id} className="surface-card flex flex-wrap items-center justify-between gap-3 p-5">
+          <div
+            key={c.id}
+            className="surface-card flex flex-wrap items-center justify-between gap-3 p-5"
+          >
             <div>
               <p className="font-display text-xl">{c.full_name}</p>
               <a
@@ -87,16 +98,30 @@ function ClientsPage() {
               </a>
               {c.notes && <p className="mt-1 text-xs text-muted-foreground">{c.notes}</p>}
             </div>
-            <div className="text-right text-sm">
-              <p>
-                {c.visits} {c.visits === 1 ? "visita" : "visite"}
-              </p>
-              <p className="font-display text-xl">{formatPrice(c.total)}</p>
-              {c.last && (
-                <p className="text-xs text-muted-foreground">
-                  Ultima: {formatDateShort(c.last)}
+            <div className="flex items-center gap-3">
+              <button
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      `Eliminare definitivamente ${c.full_name} e tutti i suoi appuntamenti? L'operazione non si può annullare.`,
+                    )
+                  )
+                    remove.mutate(c.id);
+                }}
+                aria-label={`Elimina ${c.full_name}`}
+                title="Elimina definitivamente (GDPR)"
+                className="silk rounded-full border border-border p-2 text-muted-foreground hover:bg-destructive/10 hover:text-destructive"
+              >
+                <Trash2 className="size-4" />
+              </button>
+              <div className="text-right text-sm">
+                <p>
+                  {c.visits} {c.visits === 1 ? "visita" : "visite"}
                 </p>
-              )}
+                {c.last && (
+                  <p className="text-xs text-muted-foreground">Ultima: {formatDateShort(c.last)}</p>
+                )}
+              </div>
             </div>
           </div>
         ))}

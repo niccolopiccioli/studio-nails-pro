@@ -18,6 +18,7 @@ export type Database = {
         Row: {
           artist_id: string | null
           client_id: string | null
+          client_email: string
           client_name: string
           client_phone: string
           created_at: string
@@ -34,6 +35,7 @@ export type Database = {
         Insert: {
           artist_id?: string | null
           client_id?: string | null
+          client_email?: string
           client_name: string
           client_phone: string
           created_at?: string
@@ -50,6 +52,7 @@ export type Database = {
         Update: {
           artist_id?: string | null
           client_id?: string | null
+          client_email?: string
           client_name?: string
           client_phone?: string
           created_at?: string
@@ -134,6 +137,7 @@ export type Database = {
       clients: {
         Row: {
           created_at: string
+          email: string
           full_name: string
           id: string
           notes: string
@@ -142,6 +146,7 @@ export type Database = {
         }
         Insert: {
           created_at?: string
+          email?: string
           full_name: string
           id?: string
           notes?: string
@@ -150,6 +155,7 @@ export type Database = {
         }
         Update: {
           created_at?: string
+          email?: string
           full_name?: string
           id?: string
           notes?: string

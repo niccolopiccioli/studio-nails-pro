@@ -7,23 +7,17 @@ import work2 from "@/assets/work-2.jpg";
 import work3 from "@/assets/work-3.jpg";
 import work4 from "@/assets/work-4.jpg";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
+import { BRAND_DESC, BRAND_NAME } from "@/lib/brand";
 import { getStudioAndServices } from "@/lib/booking.functions";
 import { formatDuration, formatPrice } from "@/lib/time";
 
 export const Route = createFileRoute("/servizi")({
   head: () => ({
     meta: [
-      { title: "Servizi e listino — Studio Nails" },
-      {
-        name: "description",
-        content:
-          "Manicure semipermanente, ricostruzione gel, refill, nail art e pedicure: prezzi e durata di ogni trattamento.",
-      },
-      { property: "og:title", content: "Servizi e listino — Studio Nails" },
-      {
-        property: "og:description",
-        content: "Tutti i trattamenti di Studio Nails con prezzo e durata.",
-      },
+      { title: `Servizi e listino — ${BRAND_NAME}` },
+      { name: "description", content: BRAND_DESC },
+      { property: "og:title", content: `Servizi e listino — ${BRAND_NAME}` },
+      { property: "og:description", content: BRAND_DESC },
     ],
   }),
   component: ServicesPage,
@@ -42,8 +36,8 @@ function ServicesPage() {
         <p className="eyebrow">Listino</p>
         <h1 className="mt-2 font-display text-5xl">Servizi</h1>
         <p className="mt-4 max-w-lg text-sm text-muted-foreground">
-          Ogni trattamento è pensato su misura. Durata e prezzo sono indicativi e possono variare
-          in base alla lunghezza e alla decorazione scelta.
+          Ogni trattamento è pensato su misura. Durata e prezzo sono indicativi e possono variare in
+          base alla lunghezza e alla decorazione scelta.
         </p>
 
         <div className="mt-10 grid gap-5 sm:grid-cols-2">

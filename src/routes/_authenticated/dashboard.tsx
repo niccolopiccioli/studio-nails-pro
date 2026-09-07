@@ -3,17 +3,23 @@ import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
 import { useMemo, useState } from "react";
 import { toast } from "sonner";
-import { ChevronLeft, ChevronRight, Phone, StickyNote } from "lucide-react";
+import { ChevronLeft, ChevronRight, Phone, Plus, StickyNote } from "lucide-react";
 
 import { StaffShell, StatCard } from "@/components/staff-shell";
+import { BRAND_NAME } from "@/lib/brand";
 import { useStaff } from "@/hooks/use-staff";
-import { listAppointments, updateAppointment } from "@/lib/staff.functions";
+import {
+  createAppointmentManual,
+  deleteAppointment,
+  listAppointments,
+  listServicesAdmin,
+  updateAppointment,
+} from "@/lib/staff.functions";
 import {
   addDaysKey,
   dayKey,
   formatDateLong,
   formatDateShort,
-  formatPrice,
   formatTime,
   startOfWeekKey,
 } from "@/lib/time";
@@ -21,67 +27,57 @@ import {
 export const Route = createFileRoute("/_authenticated/dashboard")({
   head: () => ({
     meta: [
-      { title: "Agenda — Studio Nails" },
-      { name: "description", content: "Agenda giornaliera, settimanale e mensile della nail artist." },
+      { title: `Agenda — ${BRAND_NAME}` },
+      { name: "description", content: "Agenda giornaliera e settimanale dello studio." },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: DashboardPage,
 });
 
-type View = "day" | "week" | "month";
+type View = "day" | "week";
 
 function DashboardPage() {
   const { profile } = useStaff();
   const qc = useQueryClient();
   const fetchAppointments = useServerFn(listAppointments);
+  const fetchServices = useServerFn(listServicesAdmin);
   const update = useServerFn(updateAppointment);
+  const createManual = useServerFn(createAppointmentManual);
+  const removeFn = useServerFn(deleteAppointment);
 
   const [view, setView] = useState<View>("day");
   const [anchor, setAnchor] = useState(() => dayKey(new Date()));
   const [movingId, setMovingId] = useState<string | null>(null);
   const [moveDay, setMoveDay] = useState("");
   const [moveTime, setMoveTime] = useState("");
-
-  const monthStart = `${anchor.slice(0, 7)}-01`;
-  const monthEnd = useMemo(() => {
-    const d = new Date(`${monthStart}T12:00:00Z`);
-    d.setUTCMonth(d.getUTCMonth() + 1);
-    d.setUTCDate(0);
-    return d.toISOString().slice(0, 10);
-  }, [monthStart]);
-
-  const { data, isLoading } = useQuery({
-    queryKey: ["appointments", monthStart, monthEnd],
-    queryFn: () => fetchAppointments({ data: { from: monthStart, to: monthEnd } }),
-  });
-
-  const all = data?.appointments ?? [];
+  const [creating, setCreating] = useState(false);
 
   const range = useMemo(() => {
-    if (view === "day") return [anchor, anchor];
-    if (view === "week") {
-      const start = startOfWeekKey(anchor);
-      return [start, addDaysKey(start, 6)];
-    }
-    return [monthStart, monthEnd];
-  }, [view, anchor, monthStart, monthEnd]);
+    if (view === "day") return [anchor, anchor] as const;
+    const start = startOfWeekKey(anchor);
+    return [start, addDaysKey(start, 6)] as const;
+  }, [view, anchor]);
 
-  const visible = all.filter((a) => {
-    const k = dayKey(a.starts_at);
-    return k >= range[0]! && k <= range[1]!;
+  const { data, isLoading } = useQuery({
+    queryKey: ["appointments", range[0], range[1]],
+    queryFn: () => fetchAppointments({ data: { from: range[0], to: range[1] } }),
+  });
+  const { data: servicesData } = useQuery({
+    queryKey: ["services-admin"],
+    queryFn: () => fetchServices(),
   });
 
-  const revenue = (from: string, to: string) =>
-    all
-      .filter((a) => {
-        const k = dayKey(a.starts_at);
-        return k >= from && k <= to && a.status !== "cancelled";
-      })
-      .reduce((sum, a) => sum + a.price_cents, 0);
+  const all = useMemo(
+    () => [...(data?.appointments ?? [])].sort((a, b) => a.starts_at.localeCompare(b.starts_at)),
+    [data],
+  );
 
+  // Piano free: unico dato mostrato, numero di appuntamenti di oggi.
   const today = dayKey(new Date());
-  const weekStart = startOfWeekKey(today);
+  const todayCount = all.filter(
+    (a) => dayKey(a.starts_at) === today && a.status !== "cancelled",
+  ).length;
 
   const mutate = useMutation({
     mutationFn: (input: {
@@ -98,30 +94,55 @@ function DashboardPage() {
     onError: (e: Error) => toast.error(e.message),
   });
 
+  const remove = useMutation({
+    mutationFn: (id: string) => removeFn({ data: { id } }),
+    onSuccess: () => {
+      qc.invalidateQueries({ queryKey: ["appointments"] });
+      qc.invalidateQueries({ queryKey: ["clients"] });
+      toast.success("Appuntamento eliminato definitivamente");
+    },
+    onError: (e: Error) => toast.error(e.message),
+  });
+
   const shift = (delta: number) => {
     if (view === "day") setAnchor(addDaysKey(anchor, delta));
-    else if (view === "week") setAnchor(addDaysKey(anchor, delta * 7));
-    else {
-      const d = new Date(`${anchor}T12:00:00Z`);
-      d.setUTCMonth(d.getUTCMonth() + delta);
-      setAnchor(d.toISOString().slice(0, 10));
-    }
+    else setAnchor(addDaysKey(anchor, delta * 7));
   };
 
   return (
     <StaffShell title="Agenda" subtitle={profile?.full_name ?? undefined}>
-      <div className="grid gap-3 sm:grid-cols-3">
-        <StatCard label="Fatturato oggi" value={formatPrice(revenue(today, today))} />
-        <StatCard
-          label="Questa settimana"
-          value={formatPrice(revenue(weekStart, addDaysKey(weekStart, 6)))}
-        />
-        <StatCard label="Questo mese" value={formatPrice(revenue(monthStart, monthEnd))} />
+      <div className="grid gap-3 sm:grid-cols-2">
+        <StatCard label="Appuntamenti oggi" value={String(todayCount)} />
+        <div className="surface-card flex items-center justify-between gap-3 p-5">
+          <div>
+            <p className="eyebrow">Nuovo</p>
+            <p className="mt-2 text-sm text-muted-foreground">Telefono o walk-in, senza link.</p>
+          </div>
+          <button
+            onClick={() => setCreating((v) => !v)}
+            className="silk inline-flex items-center gap-2 rounded-full bg-primary px-5 py-2.5 text-[0.62rem] tracking-[0.2em] uppercase text-primary-foreground"
+          >
+            <Plus className="size-3.5" /> {creating ? "Chiudi" : "Crea"}
+          </button>
+        </div>
       </div>
+
+      {creating && (
+        <CreateForm
+          services={servicesData?.services ?? []}
+          defaultDay={anchor}
+          onDone={() => {
+            setCreating(false);
+            qc.invalidateQueries({ queryKey: ["appointments"] });
+            qc.invalidateQueries({ queryKey: ["clients"] });
+          }}
+          create={(input) => createManual({ data: input })}
+        />
+      )}
 
       <div className="mt-6 flex flex-wrap items-center justify-between gap-3">
         <div className="flex gap-1 rounded-full border border-border bg-card p-1">
-          {(["day", "week", "month"] as View[]).map((v) => (
+          {(["day", "week"] as View[]).map((v) => (
             <button
               key={v}
               onClick={() => setView(v)}
@@ -130,7 +151,7 @@ function DashboardPage() {
                 view === v ? "bg-primary text-primary-foreground" : "text-muted-foreground",
               ].join(" ")}
             >
-              {v === "day" ? "Giorno" : v === "week" ? "Settimana" : "Mese"}
+              {v === "day" ? "Giorno" : "Settimana"}
             </button>
           ))}
         </div>
@@ -145,13 +166,7 @@ function DashboardPage() {
           <p className="min-w-[10rem] text-center text-sm capitalize">
             {view === "day"
               ? formatDateLong(`${anchor}T12:00:00Z`)
-              : view === "week"
-                ? `${formatDateShort(`${range[0]}T12:00:00Z`)} – ${formatDateShort(`${range[1]}T12:00:00Z`)}`
-                : new Intl.DateTimeFormat("it-IT", {
-                    month: "long",
-                    year: "numeric",
-                    timeZone: "UTC",
-                  }).format(new Date(`${monthStart}T12:00:00Z`))}
+              : `${formatDateShort(`${range[0]}T12:00:00Z`)} – ${formatDateShort(`${range[1]}T12:00:00Z`)}`}
           </p>
           <button
             aria-label="Successivo"
@@ -165,12 +180,12 @@ function DashboardPage() {
 
       <div className="mt-5 space-y-3">
         {isLoading && <p className="text-sm text-muted-foreground">Carico l'agenda…</p>}
-        {!isLoading && visible.length === 0 && (
+        {!isLoading && all.length === 0 && (
           <div className="surface-card p-8 text-center text-sm text-muted-foreground">
             Nessun appuntamento in questo periodo.
           </div>
         )}
-        {visible.map((a) => (
+        {all.map((a) => (
           <article key={a.id} className="surface-card animate-rise p-5">
             <div className="flex flex-wrap items-start justify-between gap-3">
               <div>
@@ -194,7 +209,6 @@ function DashboardPage() {
                 )}
               </div>
               <div className="text-right">
-                <p className="font-display text-2xl">{formatPrice(a.price_cents)}</p>
                 <span
                   className={[
                     "mt-1 inline-block rounded-full px-3 py-1 text-[0.6rem] tracking-[0.16em] uppercase",
@@ -242,6 +256,19 @@ function DashboardPage() {
                   Cancella
                 </ActionButton>
               )}
+              <ActionButton
+                tone="danger"
+                onClick={() => {
+                  if (
+                    window.confirm(
+                      "Eliminare definitivamente questo appuntamento? L'operazione non si può annullare.",
+                    )
+                  )
+                    remove.mutate(a.id);
+                }}
+              >
+                Elimina
+              </ActionButton>
             </div>
 
             {movingId === a.id && (
@@ -275,6 +302,142 @@ function DashboardPage() {
         ))}
       </div>
     </StaffShell>
+  );
+}
+
+function CreateForm({
+  services,
+  defaultDay,
+  onDone,
+  create,
+}: {
+  services: { id: string; name: string }[];
+  defaultDay: string;
+  onDone: () => void;
+  create: (input: {
+    serviceId: string;
+    day: string;
+    time: string;
+    name: string;
+    phone: string;
+    email?: string | undefined;
+    notes?: string | undefined;
+  }) => Promise<unknown>;
+}) {
+  const [serviceId, setServiceId] = useState(services[0]?.id ?? "");
+  const [name, setName] = useState("");
+  const [phone, setPhone] = useState("");
+  const [email, setEmail] = useState("");
+  const [day, setDay] = useState(defaultDay);
+  const [time, setTime] = useState("");
+  const [notes, setNotes] = useState("");
+  const [saving, setSaving] = useState(false);
+
+  const canSave =
+    serviceId && day && time && name.trim().length > 1 && phone.trim().length > 5 && !saving;
+
+  const submit = async () => {
+    setSaving(true);
+    try {
+      await create({
+        serviceId,
+        day,
+        time,
+        name,
+        phone,
+        email: email || undefined,
+        notes: notes || undefined,
+      });
+      toast.success("Appuntamento creato");
+      onDone();
+    } catch (e) {
+      toast.error(e instanceof Error ? e.message : "Creazione non riuscita");
+      setSaving(false);
+    }
+  };
+
+  return (
+    <div className="surface-card mt-4 space-y-3 p-5">
+      <div className="grid gap-3 sm:grid-cols-2">
+        <label className="text-xs">
+          <span className="eyebrow">Servizio</span>
+          <select
+            value={serviceId}
+            onChange={(e) => setServiceId(e.target.value)}
+            className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
+          >
+            {services.map((s) => (
+              <option key={s.id} value={s.id}>
+                {s.name}
+              </option>
+            ))}
+          </select>
+        </label>
+        <label className="text-xs">
+          <span className="eyebrow">Cliente</span>
+          <input
+            value={name}
+            onChange={(e) => setName(e.target.value)}
+            placeholder="Nome e cognome"
+            className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="text-xs">
+          <span className="eyebrow">Telefono</span>
+          <input
+            value={phone}
+            onChange={(e) => setPhone(e.target.value)}
+            inputMode="tel"
+            placeholder="+39 333 1234567"
+            className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="text-xs">
+          <span className="eyebrow">Email (per la conferma)</span>
+          <input
+            value={email}
+            onChange={(e) => setEmail(e.target.value)}
+            inputMode="email"
+            placeholder="cliente@email.it"
+            className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="text-xs">
+          <span className="eyebrow">Data</span>
+          <input
+            type="date"
+            value={day}
+            onChange={(e) => setDay(e.target.value)}
+            className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
+          />
+        </label>
+        <label className="text-xs">
+          <span className="eyebrow">Ora</span>
+          <input
+            type="time"
+            value={time}
+            onChange={(e) => setTime(e.target.value)}
+            className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
+          />
+        </label>
+      </div>
+      <label className="block text-xs">
+        <span className="eyebrow">Note</span>
+        <input
+          value={notes}
+          onChange={(e) => setNotes(e.target.value)}
+          placeholder="Opzionale"
+          className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
+        />
+      </label>
+      <button
+        disabled={!canSave}
+        onClick={submit}
+        className="silk rounded-full bg-primary px-6 py-3 text-[0.65rem] tracking-[0.2em] uppercase text-primary-foreground disabled:opacity-40"
+      >
+        {saving ? "Salvo…" : "Salva appuntamento"}
+      </button>
+    </div>
   );
 }
 

@@ -3,13 +3,13 @@ import { useEffect, useState } from "react";
 import { toast } from "sonner";
 
 import { supabase } from "@/integrations/supabase/client";
-import { lovable } from "@/integrations/lovable/index";
+import { BRAND_NAME } from "@/lib/brand";
 
 export const Route = createFileRoute("/auth")({
   ssr: false,
   head: () => ({
     meta: [
-      { title: "Accesso staff — Studio Nails" },
+      { title: `Accesso staff — ${BRAND_NAME}` },
       { name: "description", content: "Area riservata a nail artist e proprietario." },
       { name: "robots", content: "noindex" },
     ],
@@ -19,17 +19,31 @@ export const Route = createFileRoute("/auth")({
 
 function AuthPage() {
   const navigate = useNavigate();
-  const [mode, setMode] = useState<"signin" | "signup">("signin");
+  const [mode, setMode] = useState<"signin" | "signup" | "forgot" | "reset">(() =>
+    typeof window !== "undefined" && window.location.hash.includes("type=recovery")
+      ? "reset"
+      : "signin",
+  );
   const [email, setEmail] = useState("");
   const [password, setPassword] = useState("");
+  const [newPassword, setNewPassword] = useState("");
   const [fullName, setFullName] = useState("");
   const [loading, setLoading] = useState(false);
 
   useEffect(() => {
+    // Da link di recupero: resta qui per impostare la nuova password.
+    if (window.location.hash.includes("type=recovery")) return;
     supabase.auth.getSession().then(({ data }) => {
       if (data.session) navigate({ to: "/dashboard", replace: true });
     });
   }, [navigate]);
+
+  useEffect(() => {
+    const { data } = supabase.auth.onAuthStateChange((event) => {
+      if (event === "PASSWORD_RECOVERY") setMode("reset");
+    });
+    return () => data.subscription.unsubscribe();
+  }, []);
 
   const submit = async () => {
     setLoading(true);
@@ -47,6 +61,19 @@ function AuthPage() {
         const { data: session } = await supabase.auth.getSession();
         if (session.session) navigate({ to: "/dashboard" });
         else toast.success("Controlla la tua email per confermare l'account.");
+      } else if (mode === "forgot") {
+        const { error } = await supabase.auth.resetPasswordForEmail(email, {
+          redirectTo: `${window.location.origin}/auth`,
+        });
+        if (error) throw error;
+        toast.success("Controlla la tua email per reimpostare la password.");
+        setMode("signin");
+      } else if (mode === "reset") {
+        if (newPassword.length < 6) throw new Error("Scegli almeno 6 caratteri.");
+        const { error } = await supabase.auth.updateUser({ password: newPassword });
+        if (error) throw error;
+        toast.success("Password aggiornata.");
+        navigate({ to: "/dashboard" });
       } else {
         const { error } = await supabase.auth.signInWithPassword({ email, password });
         if (error) throw error;
@@ -60,25 +87,26 @@ function AuthPage() {
   };
 
   const google = async () => {
-    const result = await lovable.auth.signInWithOAuth("google", {
-      redirect_uri: window.location.origin,
+    const { error } = await supabase.auth.signInWithOAuth({
+      provider: "google",
+      options: { redirectTo: window.location.origin },
     });
-    if (result.error) {
+    if (error) {
       toast.error("Accesso con Google non riuscito");
-      return;
     }
-    if (result.redirected) return;
-    navigate({ to: "/dashboard" });
   };
 
   return (
     <div className="gradient-blush flex min-h-screen items-center justify-center px-5 py-12">
       <div className="surface-card w-full max-w-md p-8">
         <Link to="/" className="eyebrow">
-          ← Studio Nails
+          ← {BRAND_NAME}
         </Link>
         <h1 className="mt-4 font-display text-4xl">
-          {mode === "signin" ? "Area riservata" : "Crea il tuo accesso"}
+          {mode === "signin" && "Area riservata"}
+          {mode === "signup" && "Crea il tuo accesso"}
+          {mode === "forgot" && "Recupera password"}
+          {mode === "reset" && "Nuova password"}
         </h1>
         <p className="mt-2 text-sm text-muted-foreground">
           Riservata alla nail artist e al proprietario dello studio.
@@ -100,34 +128,70 @@ function AuthPage() {
             placeholder="Email"
             className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/60"
           />
-          <input
-            value={password}
-            onChange={(e) => setPassword(e.target.value)}
-            type="password"
-            placeholder="Password"
-            className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/60"
-          />
+          {(mode === "signin" || mode === "signup") && (
+            <input
+              value={password}
+              onChange={(e) => setPassword(e.target.value)}
+              type="password"
+              placeholder="Password"
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/60"
+            />
+          )}
+          {mode === "reset" && (
+            <input
+              value={newPassword}
+              onChange={(e) => setNewPassword(e.target.value)}
+              type="password"
+              placeholder="Nuova password (min. 6 caratteri)"
+              className="w-full rounded-xl border border-border bg-card px-4 py-3 text-sm outline-none focus:border-primary/60"
+            />
+          )}
           <button
             onClick={submit}
             disabled={loading}
             className="silk w-full rounded-full bg-primary px-6 py-3.5 text-[0.7rem] tracking-[0.24em] uppercase text-primary-foreground disabled:opacity-50"
           >
-            {mode === "signin" ? "Accedi" : "Registrati"}
+            {mode === "signin" && "Accedi"}
+            {mode === "signup" && "Registrati"}
+            {mode === "forgot" && "Invia link di recupero"}
+            {mode === "reset" && "Imposta nuova password"}
           </button>
-          <button
-            onClick={google}
-            className="silk w-full rounded-full border border-border px-6 py-3.5 text-[0.7rem] tracking-[0.24em] uppercase hover:bg-accent/40"
-          >
-            Continua con Google
-          </button>
+          {(mode === "signin" || mode === "signup") && (
+            <button
+              onClick={google}
+              className="silk w-full rounded-full border border-border px-6 py-3.5 text-[0.7rem] tracking-[0.24em] uppercase hover:bg-accent/40"
+            >
+              Continua con Google
+            </button>
+          )}
         </div>
 
-        <button
-          onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
-          className="silk mt-6 text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
-        >
-          {mode === "signin" ? "Non hai un accesso? Registrati" : "Hai già un accesso? Accedi"}
-        </button>
+        <div className="mt-6 flex flex-col gap-2">
+          {(mode === "signin" || mode === "signup") && (
+            <button
+              onClick={() => setMode(mode === "signin" ? "signup" : "signin")}
+              className="silk text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              {mode === "signin" ? "Non hai un accesso? Registrati" : "Hai già un accesso? Accedi"}
+            </button>
+          )}
+          {mode === "signin" && (
+            <button
+              onClick={() => setMode("forgot")}
+              className="silk text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Password dimenticata?
+            </button>
+          )}
+          {(mode === "forgot" || mode === "reset") && (
+            <button
+              onClick={() => setMode("signin")}
+              className="silk text-xs text-muted-foreground underline underline-offset-4 hover:text-foreground"
+            >
+              Torna all'accesso
+            </button>
+          )}
+        </div>
       </div>
     </div>
   );

@@ -1,44 +1,40 @@
 import { createFileRoute } from "@tanstack/react-router";
 import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { useServerFn } from "@tanstack/react-start";
-import { useMemo, useState } from "react";
+import { useState } from "react";
 import { toast } from "sonner";
 import { Plus, Trash2 } from "lucide-react";
 
-import { StaffShell, StatCard } from "@/components/staff-shell";
+import { StaffShell } from "@/components/staff-shell";
+import { BRAND_NAME } from "@/lib/brand";
 import { useStaff } from "@/hooks/use-staff";
 import {
   deleteService,
-  listAppointments,
-  listClients,
   listServicesAdmin,
-  listStaffUsers,
   saveService,
-  setUserRole,
   updateStudioSettings,
 } from "@/lib/staff.functions";
-import { dayKey, formatPrice } from "@/lib/time";
 
 export const Route = createFileRoute("/_authenticated/gestionale")({
   head: () => ({
     meta: [
-      { title: "Gestionale — Studio Nails" },
-      { name: "description", content: "Fatturato, clienti, servizi, utenti e impostazioni." },
+      { title: `Servizi e attività — ${BRAND_NAME}` },
+      { name: "description", content: "Gestione base di servizi e dati dello studio." },
       { name: "robots", content: "noindex" },
     ],
   }),
   component: ManagementPage,
 });
 
-type Tab = "overview" | "services" | "users" | "settings";
+type Tab = "services" | "settings";
 
 function ManagementPage() {
   const { isOwner, studio, isLoading } = useStaff();
-  const [tab, setTab] = useState<Tab>("overview");
+  const [tab, setTab] = useState<Tab>("services");
 
   if (isLoading) {
     return (
-      <StaffShell title="Gestionale">
+      <StaffShell title="Servizi">
         <p className="text-sm text-muted-foreground">Carico i dati…</p>
       </StaffShell>
     );
@@ -46,11 +42,11 @@ function ManagementPage() {
 
   if (!isOwner) {
     return (
-      <StaffShell title="Gestionale">
+      <StaffShell title="Servizi">
         <div className="surface-card p-8 text-center">
           <h2 className="font-display text-2xl">Area riservata al proprietario</h2>
           <p className="mt-2 text-sm text-muted-foreground">
-            Chiedi al proprietario dello studio di assegnarti questo permesso.
+            Il piano free prevede un solo operatore.
           </p>
         </div>
       </StaffShell>
@@ -58,13 +54,11 @@ function ManagementPage() {
   }
 
   return (
-    <StaffShell title="Gestionale" subtitle={studio?.name ?? undefined}>
+    <StaffShell title="Servizi" subtitle={studio?.name ?? undefined}>
       <div className="flex flex-wrap gap-1 rounded-full border border-border bg-card p-1">
         {(
           [
-            ["overview", "Panoramica"],
             ["services", "Servizi"],
-            ["users", "Utenti"],
             ["settings", "Attività"],
           ] as [Tab, string][]
         ).map(([id, label]) => (
@@ -82,95 +76,10 @@ function ManagementPage() {
       </div>
 
       <div className="mt-6">
-        {tab === "overview" && <Overview />}
         {tab === "services" && <ServicesAdmin />}
-        {tab === "users" && <UsersAdmin />}
         {tab === "settings" && <SettingsAdmin />}
       </div>
     </StaffShell>
-  );
-}
-
-function Overview() {
-  const fetchAppointments = useServerFn(listAppointments);
-  const fetchClients = useServerFn(listClients);
-
-  const today = dayKey(new Date());
-  const from = `${today.slice(0, 4)}-01-01`;
-  const to = `${today.slice(0, 4)}-12-31`;
-
-  const { data } = useQuery({
-    queryKey: ["appointments-year", from],
-    queryFn: () => fetchAppointments({ data: { from, to } }),
-  });
-  const { data: clientsData } = useQuery({ queryKey: ["clients"], queryFn: () => fetchClients() });
-
-  const appts = useMemo(
-    () => (data?.appointments ?? []).filter((a) => a.status !== "cancelled"),
-    [data],
-  );
-
-  const month = today.slice(0, 7);
-  const monthAppts = appts.filter((a) => dayKey(a.starts_at).startsWith(month));
-  const revenueMonth = monthAppts.reduce((s, a) => s + a.price_cents, 0);
-  const revenueYear = appts.reduce((s, a) => s + a.price_cents, 0);
-  const avg = appts.length ? Math.round(revenueYear / appts.length) : 0;
-
-  const clients = clientsData?.clients ?? [];
-  const newClients = clients.filter((c) => c.created_at.slice(0, 7) === month).length;
-  const byPhone = new Map<string, number>();
-  for (const a of appts) byPhone.set(a.client_phone, (byPhone.get(a.client_phone) ?? 0) + 1);
-  const recurring = [...byPhone.values()].filter((n) => n > 1).length;
-
-  const byService = new Map<string, { count: number; revenue: number }>();
-  for (const a of appts) {
-    const key = a.services?.name ?? "Altro";
-    const prev = byService.get(key) ?? { count: 0, revenue: 0 };
-    byService.set(key, { count: prev.count + 1, revenue: prev.revenue + a.price_cents });
-  }
-  const topServices = [...byService.entries()].sort((a, b) => b[1].count - a[1].count).slice(0, 5);
-  const maxCount = topServices[0]?.[1].count ?? 1;
-
-  return (
-    <div className="space-y-6">
-      <div className="grid gap-3 sm:grid-cols-2 lg:grid-cols-4">
-        <StatCard label="Fatturato mese" value={formatPrice(revenueMonth)} />
-        <StatCard label="Fatturato anno" value={formatPrice(revenueYear)} />
-        <StatCard label="Prezzo medio" value={formatPrice(avg)} />
-        <StatCard label="Appuntamenti anno" value={String(appts.length)} />
-      </div>
-
-      <div className="grid gap-3 sm:grid-cols-3">
-        <StatCard label="Clienti totali" value={String(clients.length)} />
-        <StatCard label="Nuovi questo mese" value={String(newClients)} />
-        <StatCard label="Clienti ricorrenti" value={String(recurring)} />
-      </div>
-
-      <div className="surface-card p-6">
-        <h2 className="font-display text-2xl">Servizi più venduti</h2>
-        <div className="mt-4 space-y-3">
-          {topServices.length === 0 && (
-            <p className="text-sm text-muted-foreground">Ancora nessun dato.</p>
-          )}
-          {topServices.map(([name, v]) => (
-            <div key={name}>
-              <div className="flex items-center justify-between text-sm">
-                <span>{name}</span>
-                <span className="text-muted-foreground">
-                  {v.count} · {formatPrice(v.revenue)}
-                </span>
-              </div>
-              <div className="mt-1.5 h-2 rounded-full bg-muted">
-                <div
-                  className="h-2 rounded-full bg-primary"
-                  style={{ width: `${Math.round((v.count / maxCount) * 100)}%` }}
-                />
-              </div>
-            </div>
-          ))}
-        </div>
-      </div>
-    </div>
   );
 }
 
@@ -302,7 +211,6 @@ function ServiceRow({
   onRemove: () => void;
 }) {
   const [name, setName] = useState(service.name);
-  const [description, setDescription] = useState(service.description);
   const [price, setPrice] = useState((service.price_cents / 100).toString());
   const [duration, setDuration] = useState(String(service.duration_minutes));
 
@@ -326,10 +234,11 @@ function ServiceRow({
           />
         </label>
         <label className="text-xs">
-          <span className="eyebrow">Durata</span>
+          <span className="eyebrow">Durata min</span>
           <input
             value={duration}
             onChange={(e) => setDuration(e.target.value)}
+            inputMode="numeric"
             className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
           />
         </label>
@@ -339,7 +248,7 @@ function ServiceRow({
               onSave({
                 id: service.id,
                 name,
-                description,
+                description: service.description,
                 price_cents: Math.round(Number(price.replace(",", ".")) * 100),
                 duration_minutes: Number(duration),
                 active: service.active,
@@ -359,71 +268,6 @@ function ServiceRow({
           </button>
         </div>
       </div>
-      <label className="mt-3 block text-xs">
-        <span className="eyebrow">Descrizione</span>
-        <textarea
-          value={description}
-          onChange={(e) => setDescription(e.target.value)}
-          rows={2}
-          className="mt-1 block w-full rounded-xl border border-border bg-card px-3 py-2 text-sm"
-        />
-      </label>
-    </div>
-  );
-}
-
-function UsersAdmin() {
-  const qc = useQueryClient();
-  const fetchUsers = useServerFn(listStaffUsers);
-  const setRole = useServerFn(setUserRole);
-  const { data } = useQuery({ queryKey: ["staff-users"], queryFn: () => fetchUsers() });
-
-  const mutation = useMutation({
-    mutationFn: (input: { userId: string; role: "owner" | "artist" }) => setRole({ data: input }),
-    onSuccess: () => {
-      qc.invalidateQueries({ queryKey: ["staff-users"] });
-      toast.success("Ruolo aggiornato");
-    },
-    onError: (e: Error) => toast.error(e.message),
-  });
-
-  return (
-    <div className="space-y-3">
-      {(data?.profiles ?? []).map((p) => {
-        const role = data?.roles.find((r) => r.user_id === p.id)?.role ?? "artist";
-        return (
-          <div
-            key={p.id}
-            className="surface-card flex flex-wrap items-center justify-between gap-3 p-5"
-          >
-            <div>
-              <p className="font-display text-xl">{p.full_name || "Senza nome"}</p>
-              <p className="text-xs text-muted-foreground">
-                {role === "owner" ? "Proprietario" : "Nail artist"}
-              </p>
-            </div>
-            <div className="flex gap-2">
-              {(["artist", "owner"] as const).map((r) => (
-                <button
-                  key={r}
-                  onClick={() => mutation.mutate({ userId: p.id, role: r })}
-                  className={[
-                    "silk rounded-full px-4 py-2 text-[0.6rem] tracking-[0.18em] uppercase",
-                    role === r
-                      ? "bg-primary text-primary-foreground"
-                      : "border border-border hover:bg-accent/40",
-                  ].join(" ")}
-                >
-                  {r === "owner" ? "Proprietario" : "Nail artist"}
-                </button>
-              ))}
-            </div>
-          </div>
-        );
-      })}
-      <p className="text-xs text-muted-foreground">
-        Nuovi membri: falli registrare dalla pagina di accesso, poi assegna qui il ruolo.
-      </p>
     </div>
   );
 }

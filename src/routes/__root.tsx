@@ -10,6 +10,7 @@ import {
 import { useEffect, type ReactNode } from "react";
 
 import appCss from "../styles.css?url";
+import { BRAND_DESC, BRAND_NAME, BRAND_TAGLINE, THEME } from "@/lib/brand";
 import { reportLovableError } from "../lib/lovable-error-reporting";
 import { Toaster } from "@/components/ui/sonner";
 import { supabase } from "@/integrations/supabase/client";
@@ -18,7 +19,7 @@ function NotFoundComponent() {
   return (
     <div className="flex min-h-screen items-center justify-center bg-background px-6">
       <div className="max-w-md text-center">
-        <p className="eyebrow">Studio Nails</p>
+        <p className="eyebrow">{BRAND_NAME}</p>
         <h1 className="mt-3 font-display text-6xl">404</h1>
         <p className="mt-3 text-sm text-muted-foreground">
           La pagina che cerchi non esiste o è stata spostata.
@@ -75,14 +76,11 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
     meta: [
       { charSet: "utf-8" },
       { name: "viewport", content: "width=device-width, initial-scale=1, viewport-fit=cover" },
-      { title: "Studio Nails — Nail art su misura" },
-      {
-        name: "description",
-        content: "Atelier di nail art a Milano: manicure, gel e nail art su misura.",
-      },
+      { title: `${BRAND_NAME} — ${BRAND_TAGLINE}` },
+      { name: "description", content: BRAND_DESC },
       { name: "theme-color", content: "#F7F1E7" },
       { name: "apple-mobile-web-app-capable", content: "yes" },
-      { name: "apple-mobile-web-app-title", content: "Studio Nails" },
+      { name: "apple-mobile-web-app-title", content: BRAND_NAME },
       { name: "apple-mobile-web-app-status-bar-style", content: "default" },
       { property: "og:type", content: "website" },
       { name: "twitter:card", content: "summary_large_image" },
@@ -93,7 +91,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
       { rel: "preconnect", href: "https://fonts.gstatic.com", crossOrigin: "anonymous" },
       {
         rel: "stylesheet",
-        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Jost:wght@300;400;500&display=swap",
+        href: "https://fonts.googleapis.com/css2?family=Cormorant+Garamond:ital,wght@0,300;0,400;0,500;1,300&family=Fraunces:ital,opsz,wght@0,9..144,300;0,9..144,400;0,9..144,500;1,9..144,300;1,9..144,400&family=Jost:wght@300;400;500&display=swap",
       },
       { rel: "manifest", href: "/manifest.webmanifest" },
       { rel: "icon", type: "image/png", href: "/favicon.png" },
@@ -108,7 +106,7 @@ export const Route = createRootRouteWithContext<{ queryClient: QueryClient }>()(
 
 function RootShell({ children }: { children: ReactNode }) {
   return (
-    <html lang="it">
+    <html lang="it" data-theme={THEME === "nails" ? undefined : THEME}>
       <head>
         <HeadContent />
       </head>

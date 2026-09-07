@@ -1,15 +1,16 @@
 import { Link, useNavigate } from "@tanstack/react-router";
 import { useQueryClient } from "@tanstack/react-query";
-import { CalendarDays, LayoutDashboard, LogOut, Settings2, Users } from "lucide-react";
+import { CalendarDays, LogOut, Scissors, Settings2, Users } from "lucide-react";
 import type { ReactNode } from "react";
 
 import { supabase } from "@/integrations/supabase/client";
+import { BRAND_NAME } from "@/lib/brand";
 
 const navItems = [
   { to: "/dashboard", label: "Agenda", icon: CalendarDays },
   { to: "/clienti", label: "Clienti", icon: Users },
   { to: "/disponibilita", label: "Orari", icon: Settings2 },
-  { to: "/gestionale", label: "Gestionale", icon: LayoutDashboard },
+  { to: "/gestionale", label: "Servizi", icon: Scissors },
 ] as const;
 
 export function StaffShell({
@@ -36,7 +37,7 @@ export function StaffShell({
       <header className="sticky top-0 z-30 border-b border-border/60 bg-background/85 backdrop-blur-xl">
         <div className="mx-auto flex max-w-6xl items-center justify-between gap-4 px-5 py-4">
           <div>
-            <p className="eyebrow">Studio Nails</p>
+            <p className="eyebrow">{BRAND_NAME}</p>
             <h1 className="font-display text-2xl leading-tight">{title}</h1>
             {subtitle && <p className="text-xs text-muted-foreground">{subtitle}</p>}
           </div>
@@ -85,15 +86,7 @@ export function StaffShell({
   );
 }
 
-export function StatCard({
-  label,
-  value,
-  hint,
-}: {
-  label: string;
-  value: string;
-  hint?: string;
-}) {
+export function StatCard({ label, value, hint }: { label: string; value: string; hint?: string }) {
   return (
     <div className="surface-card p-5">
       <p className="eyebrow">{label}</p>

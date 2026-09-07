@@ -118,13 +118,89 @@
   --transition-silk: 320ms cubic-bezier(0.22, 1, 0.36, 1);
 }
 
+/* Tema "estetica": salvia/botanico per centri estetici (default = nails). */
+[data-theme="estetica"] {
+  --font-display: "Fraunces", ui-serif, Georgia, serif;
+  --radius: 1.5rem;
+  --cream: oklch(0.97 0.012 110);
+  --blush: oklch(0.89 0.045 145);
+  --gold: oklch(0.8 0.06 120);
+  --espresso: oklch(0.24 0.03 155);
+
+  --background: oklch(0.965 0.012 110);
+  --foreground: oklch(0.25 0.03 150);
+  --card: oklch(0.99 0.005 110);
+  --card-foreground: oklch(0.25 0.03 150);
+  --popover: oklch(0.99 0.005 110);
+  --popover-foreground: oklch(0.25 0.03 150);
+  --primary: oklch(0.3 0.055 158);
+  --primary-foreground: oklch(0.97 0.01 110);
+  --secondary: oklch(0.9 0.04 145);
+  --secondary-foreground: oklch(0.3 0.055 158);
+  --muted: oklch(0.94 0.014 115);
+  --muted-foreground: oklch(0.5 0.03 140);
+  --accent: oklch(0.89 0.045 145);
+  --accent-foreground: oklch(0.3 0.055 158);
+  --border: oklch(0.89 0.016 115);
+  --input: oklch(0.89 0.016 115);
+  --ring: oklch(0.75 0.06 150);
+
+  --chart-1: oklch(0.75 0.07 150);
+  --chart-2: oklch(0.85 0.05 140);
+  --chart-3: oklch(0.45 0.05 155);
+  --chart-4: oklch(0.7 0.05 120);
+  --chart-5: oklch(0.62 0.06 200);
+
+  --sidebar: oklch(0.95 0.014 115);
+  --sidebar-foreground: oklch(0.25 0.03 150);
+  --sidebar-primary: oklch(0.3 0.055 158);
+  --sidebar-primary-foreground: oklch(0.97 0.01 110);
+  --sidebar-accent: oklch(0.89 0.045 145);
+  --sidebar-accent-foreground: oklch(0.3 0.055 158);
+  --sidebar-border: oklch(0.89 0.016 115);
+  --sidebar-ring: oklch(0.75 0.06 150);
+
+  --gradient-blush: linear-gradient(
+    150deg,
+    oklch(0.975 0.01 110) 0%,
+    oklch(0.93 0.04 145) 55%,
+    oklch(0.88 0.05 150) 100%
+  );
+  --gradient-espresso: linear-gradient(140deg, oklch(0.3 0.05 158), oklch(0.2 0.04 155));
+  --shadow-soft: 0 18px 45px -25px oklch(0.35 0.06 155 / 0.45);
+  --shadow-lift: 0 26px 60px -30px oklch(0.3 0.07 155 / 0.55);
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
   }
 
+  /* Il tema inline compila i font nei singoli selettori: override esplicito. */
+  [data-theme="estetica"] h1,
+  [data-theme="estetica"] h2,
+  [data-theme="estetica"] h3,
+  [data-theme="estetica"] .font-display {
+    font-family: "Fraunces", ui-serif, Georgia, serif;
+    letter-spacing: 0;
+  }
+
   html {
     -webkit-tap-highlight-color: transparent;
+    font-size: 100%;
+  }
+
+  /* Desktop: base più grande, tutto scala in proporzione (unità rem). */
+  @media (min-width: 768px) {
+    html {
+      font-size: 125%;
+    }
+  }
+
+  @media (min-width: 1280px) {
+    html {
+      font-size: 137.5%;
+    }
   }
 
   body {
@@ -184,4 +260,181 @@
 
 @utility animate-rise {
   animation: rise 620ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ---- Wizard prenotazione: ingressi step con direzione ---- */
+@keyframes wizard-next {
+  from {
+    opacity: 0;
+    transform: translateX(64px) scale(0.985);
+    filter: blur(3px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@keyframes wizard-back {
+  from {
+    opacity: 0;
+    transform: translateX(-64px) scale(0.985);
+    filter: blur(3px);
+  }
+  60% {
+    opacity: 1;
+    filter: blur(0);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+    filter: none;
+  }
+}
+
+@utility animate-wizard-next {
+  animation: wizard-next 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+@utility animate-wizard-back {
+  animation: wizard-back 520ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ---- Ingresso scaglionato delle card ---- */
+@keyframes pop-in {
+  from {
+    opacity: 0;
+    transform: translateY(22px) scale(0.96);
+  }
+  60% {
+    opacity: 1;
+    transform: translateY(-3px) scale(1.012);
+  }
+  to {
+    opacity: 1;
+    transform: none;
+  }
+}
+
+@utility animate-pop-in {
+  animation: pop-in 560ms cubic-bezier(0.22, 1, 0.36, 1) both;
+}
+
+/* ---- Brillantio della barra di avanzamento ---- */
+@keyframes shimmer-slide {
+  from {
+    transform: translateX(-120%);
+  }
+  to {
+    transform: translateX(320%);
+  }
+}
+
+@utility animate-shimmer {
+  animation: shimmer-slide 2.2s ease-in-out infinite;
+}
+
+/* ---- Pulsazione dell'anello sullo step corrente ---- */
+@keyframes ring-pulse {
+  0%,
+  100% {
+    box-shadow: 0 0 0 0 oklch(0.28 0.024 35 / 0.35);
+  }
+  50% {
+    box-shadow: 0 0 0 9px oklch(0.28 0.024 35 / 0);
+  }
+}
+
+@utility animate-ring-pulse {
+  animation: ring-pulse 1.8s ease-out infinite;
+}
+
+@media (prefers-reduced-motion: reduce) {
+  .animate-wizard-next,
+  .animate-wizard-back,
+  .animate-pop-in,
+  .animate-shimmer,
+  .animate-ring-pulse,
+  .animate-rise,
+  .animate-marquee,
+  .animate-float-soft,
+  .animate-ken-burns,
+  .animate-spin-slower {
+    animation: none;
+  }
+  .reveal {
+    opacity: 1;
+    transform: none;
+    transition: none;
+  }
+}
+
+/* ---- Home editoriale ---- */
+@keyframes marquee-x {
+  from {
+    transform: translateX(0);
+  }
+  to {
+    transform: translateX(-50%);
+  }
+}
+
+@utility animate-marquee {
+  animation: marquee-x 30s linear infinite;
+}
+
+@keyframes float-soft {
+  0%,
+  100% {
+    transform: translateY(0);
+  }
+  50% {
+    transform: translateY(-12px);
+  }
+}
+
+@utility animate-float-soft {
+  animation: float-soft 5s ease-in-out infinite;
+}
+
+@keyframes ken-burns {
+  from {
+    transform: scale(1);
+  }
+  to {
+    transform: scale(1.09);
+  }
+}
+
+@utility animate-ken-burns {
+  animation: ken-burns 14s ease-in-out infinite alternate;
+}
+
+@keyframes rotate-slow {
+  to {
+    transform: rotate(360deg);
+  }
+}
+
+@utility animate-spin-slower {
+  animation: rotate-slow 16s linear infinite;
+}
+
+/* Rivelazione allo scroll (via IntersectionObserver) */
+.reveal {
+  opacity: 0;
+  transform: translateY(32px);
+  transition:
+    opacity 0.9s ease,
+    transform 0.9s cubic-bezier(0.22, 1, 0.36, 1);
+}
+
+.reveal-visible {
+  opacity: 1;
+  transform: none;
 }

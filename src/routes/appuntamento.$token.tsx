@@ -6,6 +6,7 @@ import { toast } from "sonner";
 import { CalendarCheck, CalendarX2, Clock3, Phone, Sparkles } from "lucide-react";
 
 import { SiteFooter, SiteHeader } from "@/components/site-header";
+import { BRAND_NAME } from "@/lib/brand";
 import { BookingCalendar } from "@/components/booking-calendar";
 import {
   cancelBookingByToken,
@@ -19,10 +20,10 @@ import { dayKey, formatDateLong, formatPrice, formatTime } from "@/lib/time";
 export const Route = createFileRoute("/appuntamento/$token")({
   head: () => ({
     meta: [
-      { title: "Il tuo appuntamento — Studio Nails" },
+      { title: `Il tuo appuntamento — ${BRAND_NAME}` },
       {
         name: "description",
-        content: "Consulta, sposta o cancella il tuo appuntamento da Studio Nails.",
+        content: `Consulta, sposta o cancella il tuo appuntamento da ${BRAND_NAME}`,
       },
       { name: "robots", content: "noindex" },
     ],
