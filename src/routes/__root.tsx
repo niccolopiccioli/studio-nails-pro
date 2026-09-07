@@ -139,12 +139,11 @@ function RootComponent() {
 
   // Tema per-sito prima della prima pittura (niente flash del tema sbagliato).
   useLayoutEffect(() => {
-    const theme = brand.theme === "estetica" ? "estetica" : "nails";
+    const theme = brand.theme === "estetica" || brand.theme === "veluna" ? brand.theme : "nails";
     if (theme === "nails") document.documentElement.removeAttribute("data-theme");
     else document.documentElement.setAttribute("data-theme", theme);
-    document
-      .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", theme === "estetica" ? "#141C17" : "#F7F1E7");
+    const colors = { nails: "#F7F1E7", estetica: "#141C17", veluna: "#F5F0E6" } as const;
+    document.querySelector('meta[name="theme-color"]')?.setAttribute("content", colors[theme]);
   }, [brand.theme]);
 
   useEffect(() => {

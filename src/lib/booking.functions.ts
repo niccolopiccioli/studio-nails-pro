@@ -34,6 +34,16 @@ export const getStudioAndServices = createServerFn({ method: "GET" }).handler(as
   return { studio, services: services ?? [] };
 });
 
+/** Elenco pubblico degli studi (landing piattaforma). Solo slug, nome, about, tema. */
+export const getPublicStudios = createServerFn({ method: "GET" }).handler(async () => {
+  const sb = await admin();
+  const { data: studios } = await sb
+    .from("studios")
+    .select("slug, name, about, theme")
+    .order("name");
+  return { studios: studios ?? [] };
+});
+
 /** Dati pubblici dello studio corrente (tenant by hostname). Per loader root: tema + brand. */
 export const getPublicStudio = createServerFn({ method: "GET" }).handler(async () => {
   const sb = await admin();

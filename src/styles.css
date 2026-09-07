@@ -173,18 +173,79 @@
   --shadow-lift: 0 26px 60px -30px oklch(0 0 0 / 0.8);
 }
 
+/* Tema "veluna": carta calda minimale per la piattaforma (default = nails). */
+[data-theme="veluna"] {
+  --radius: 0.5rem;
+  --cream: oklch(0.96 0.012 88);
+  --blush: oklch(0.9 0.02 85);
+  --gold: oklch(0.75 0.09 80);
+  --espresso: oklch(0.22 0.02 60);
+
+  --background: oklch(0.957 0.011 88);
+  --foreground: oklch(0.21 0.02 60);
+  --card: oklch(0.985 0.006 88);
+  --card-foreground: oklch(0.21 0.02 60);
+  --popover: oklch(0.985 0.006 88);
+  --popover-foreground: oklch(0.21 0.02 60);
+  --primary: oklch(0.22 0.022 60);
+  --primary-foreground: oklch(0.965 0.01 88);
+  --secondary: oklch(0.91 0.018 85);
+  --secondary-foreground: oklch(0.22 0.022 60);
+  --muted: oklch(0.925 0.012 85);
+  --muted-foreground: oklch(0.5 0.02 70);
+  --accent: oklch(0.9 0.02 85);
+  --accent-foreground: oklch(0.22 0.022 60);
+  --border: oklch(0.87 0.014 80);
+  --input: oklch(0.87 0.014 80);
+  --ring: oklch(0.7 0.05 80);
+
+  --chart-1: oklch(0.72 0.08 80);
+  --chart-2: oklch(0.82 0.05 90);
+  --chart-3: oklch(0.45 0.03 70);
+  --chart-4: oklch(0.65 0.04 120);
+  --chart-5: oklch(0.6 0.05 200);
+
+  --sidebar: oklch(0.94 0.012 86);
+  --sidebar-foreground: oklch(0.21 0.02 60);
+  --sidebar-primary: oklch(0.22 0.022 60);
+  --sidebar-primary-foreground: oklch(0.965 0.01 88);
+  --sidebar-accent: oklch(0.9 0.02 85);
+  --sidebar-accent-foreground: oklch(0.22 0.022 60);
+  --sidebar-border: oklch(0.87 0.014 80);
+  --sidebar-ring: oklch(0.7 0.05 80);
+
+  --gradient-blush: linear-gradient(
+    150deg,
+    oklch(0.97 0.01 88) 0%,
+    oklch(0.93 0.018 85) 55%,
+    oklch(0.89 0.022 82) 100%
+  );
+  --gradient-espresso: linear-gradient(140deg, oklch(0.24 0.022 60), oklch(0.17 0.018 60));
+  --shadow-soft: 0 18px 45px -25px oklch(0.4 0.04 60 / 0.4);
+  --shadow-lift: 0 26px 60px -30px oklch(0.35 0.05 60 / 0.5);
+}
+
+/* Override font per-tema FUORI dai layer: le utility di Tailwind vivono nel
+   layer utilities e vincerebbero su regole dentro @layer base. */
+[data-theme="estetica"] h1,
+[data-theme="estetica"] h2,
+[data-theme="estetica"] h3,
+[data-theme="estetica"] .font-display {
+  font-family: "Fraunces", ui-serif, Georgia, serif;
+  letter-spacing: 0;
+}
+[data-theme="veluna"] h1,
+[data-theme="veluna"] h2,
+[data-theme="veluna"] h3,
+[data-theme="veluna"] .font-display {
+  font-family: "Jost", ui-sans-serif, system-ui, sans-serif;
+  font-weight: 300;
+  letter-spacing: 0.01em;
+}
+
 @layer base {
   * {
     border-color: var(--color-border);
-  }
-
-  /* Il tema inline compila i font nei singoli selettori: override esplicito. */
-  [data-theme="estetica"] h1,
-  [data-theme="estetica"] h2,
-  [data-theme="estetica"] h3,
-  [data-theme="estetica"] .font-display {
-    font-family: "Fraunces", ui-serif, Georgia, serif;
-    letter-spacing: 0;
   }
 
   html {
