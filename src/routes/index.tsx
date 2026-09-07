@@ -12,6 +12,7 @@ import work3 from "@/assets/work-3.jpg";
 import work4 from "@/assets/work-4.jpg";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
 import { useBrand, useDocTitle } from "@/lib/brand";
+import { EsteticaHome } from "@/themes/estetica";
 import { getStudioAndServices } from "@/lib/booking.functions";
 import { formatDuration, formatPrice } from "@/lib/time";
 
@@ -61,6 +62,19 @@ function Home() {
   useDocTitle(`${brand.name} — ${brand.tagline}`);
   const studioName = data?.studio?.name ?? brand.name;
   const address = data?.studio?.address ?? brand.address;
+  if (brand.theme === "estetica") {
+    return (
+      <EsteticaHome
+        services={services}
+        studio={{
+          name: studioName,
+          about: data?.studio?.about ?? brand.desc,
+          address,
+          phone: data?.studio?.phone ?? brand.phone,
+        }}
+      />
+    );
+  }
   const marquee =
     services.length > 0
       ? [...services.slice(0, 5).map((s) => s.name), "Prenota senza account"]

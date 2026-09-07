@@ -3,6 +3,7 @@ import { ArrowRight, Menu, X } from "lucide-react";
 import { useEffect, useState } from "react";
 
 import { splitName, useBrand } from "@/lib/brand";
+import { EsteticaFooter, EsteticaHeader } from "@/themes/estetica";
 
 const links = [
   { to: "/", label: "Home" },
@@ -28,6 +29,8 @@ export function SiteHeader() {
       document.body.style.overflow = "";
     };
   }, [open]);
+
+  if (brand.theme === "estetica") return <EsteticaHeader />;
 
   return (
     <>
@@ -133,6 +136,7 @@ export function SiteHeader() {
 
 export function SiteFooter() {
   const brand = useBrand();
+  if (brand.theme === "estetica") return <EsteticaFooter />;
   return (
     <footer className="gradient-espresso relative mt-10 overflow-hidden text-cream md:mt-14">
       <div className="pointer-events-none absolute -top-24 right-0 size-72 rounded-full bg-blush/15 blur-3xl" />

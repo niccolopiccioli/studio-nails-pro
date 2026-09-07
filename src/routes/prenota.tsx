@@ -6,7 +6,8 @@ import { toast } from "sonner";
 import { ArrowLeft, ArrowRight, Check, Loader2, Pencil } from "lucide-react";
 
 import { SiteHeader } from "@/components/site-header";
-import { useDocTitle } from "@/lib/brand";
+import { useBrand, useDocTitle } from "@/lib/brand";
+import { EsteticaHeader } from "@/themes/estetica";
 import { BookingCalendar } from "@/components/booking-calendar";
 import {
   createBooking,
@@ -54,6 +55,8 @@ function BookingPage() {
   const { servizio } = Route.useSearch();
   const navigate = useNavigate();
   useDocTitle("Prenota online");
+  const brand = useBrand();
+  const isEst = brand.theme === "estetica";
 
   const fetchStudio = useServerFn(getStudioAndServices);
   const fetchMonth = useServerFn(getMonthAvailability);
@@ -135,7 +138,7 @@ function BookingPage() {
 
   return (
     <div className="min-h-screen">
-      <SiteHeader />
+      {isEst ? <EsteticaHeader /> : <SiteHeader />}
       <section className="mx-auto max-w-3xl px-5 pt-7 pb-4 md:py-12">
         <p className="eyebrow">Prenotazione</p>
         <h1 className="mt-2 font-display text-5xl">Il tuo appuntamento</h1>
@@ -342,7 +345,10 @@ function BookingPage() {
                 <button
                   disabled={!canSubmit || mutation.isPending}
                   onClick={() => mutation.mutate()}
-                  className="silk group relative w-full overflow-hidden rounded-full bg-primary px-7 py-4 text-[0.72rem] tracking-[0.24em] uppercase text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.99] disabled:opacity-40 disabled:hover:scale-100"
+                  className={[
+                    "silk group relative w-full overflow-hidden bg-primary px-7 py-4 text-[0.72rem] tracking-[0.24em] uppercase text-primary-foreground transition-transform hover:scale-[1.02] active:scale-[0.99] disabled:opacity-40 disabled:hover:scale-100",
+                    isEst ? "" : "rounded-full",
+                  ].join(" ")}
                 >
                   <span className="animate-shimmer pointer-events-none absolute inset-y-0 w-1/3 bg-gradient-to-r from-transparent via-white/25 to-transparent" />
                   <span className="relative inline-flex items-center gap-2">
@@ -386,6 +392,52 @@ function BookingPage() {
 }
 
 function ProgressBar({ step, onJump }: { step: Step; onJump: (n: Step) => void }) {
+  const { theme } = useBrand();
+  if (theme === "estetica") {
+    return (
+      <div className="mt-8 border-y border-border py-4">
+        <ol className="flex flex-wrap items-center gap-x-7 gap-y-2">
+          {STEPS.map((s) => {
+            const done = s.n < step;
+            const current = s.n === step;
+            return (
+              <li key={s.n}>
+                <button
+                  onClick={() => done && onJump(s.n)}
+                  disabled={!done}
+                  aria-label={s.label}
+                  className="flex items-center gap-3 text-left disabled:cursor-default"
+                >
+                  <span
+                    className={[
+                      "font-display text-sm italic",
+                      done || current ? "text-primary" : "text-muted-foreground",
+                    ].join(" ")}
+                  >
+                    {String(s.n).padStart(2, "0")}
+                  </span>
+                  <span
+                    className={[
+                      "text-[0.65rem] tracking-[0.22em] uppercase",
+                      current ? "text-foreground" : "text-muted-foreground",
+                    ].join(" ")}
+                  >
+                    {s.label}
+                  </span>
+                </button>
+              </li>
+            );
+          })}
+        </ol>
+        <div className="mt-4 h-px bg-border">
+          <div
+            className="silk h-px bg-primary"
+            style={{ width: `${((step - 1) / (STEPS.length - 1)) * 100}%` }}
+          />
+        </div>
+      </div>
+    );
+  }
   return (
     <div className="mt-8">
       <div className="flex items-center">
@@ -441,11 +493,15 @@ function ProgressBar({ step, onJump }: { step: Step; onJump: (n: Step) => void }
 }
 
 function RecapChip({ label, onEdit, delay }: { label: string; onEdit: () => void; delay: number }) {
+  const { theme } = useBrand();
   return (
     <button
       onClick={onEdit}
       style={{ animationDelay: `${delay}ms` }}
-      className="animate-pop-in silk inline-flex items-center gap-2 rounded-full border border-primary/30 bg-card px-4 py-1.5 text-xs capitalize hover:shadow-[var(--shadow-soft)]"
+      className={[
+        "animate-pop-in silk inline-flex items-center gap-2 border border-primary/30 bg-card px-4 py-1.5 text-xs capitalize hover:shadow-[var(--shadow-soft)]",
+        theme === "estetica" ? "" : "rounded-full",
+      ].join(" ")}
     >
       <Check className="size-3.5 text-primary" />
       {label}
@@ -465,10 +521,16 @@ function StepShell({
   subtitle: string;
   children: React.ReactNode;
 }) {
+  const { theme } = useBrand();
   return (
     <div>
-      <div className="flex items-center gap-3">
-        <span className="flex size-9 items-center justify-center rounded-full bg-primary font-display text-base text-primary-foreground shadow-[var(--shadow-soft)]">
+      <div className="flex items-center gap-4">
+        <span
+          className={[
+            "flex size-9 items-center justify-center bg-primary font-display text-base text-primary-foreground",
+            theme === "estetica" ? "" : "rounded-full shadow-[var(--shadow-soft)]",
+          ].join(" ")}
+        >
           {n}
         </span>
         <div>
@@ -493,10 +555,14 @@ function StepNav({ back }: { back: () => void }) {
 }
 
 function NavButton({ label, onClick }: { label: string; onClick: () => void }) {
+  const { theme } = useBrand();
   return (
     <button
       onClick={onClick}
-      className="silk inline-flex items-center gap-2 rounded-full border border-border px-5 py-2.5 text-[0.65rem] tracking-[0.2em] uppercase hover:bg-accent/40"
+      className={[
+        "silk inline-flex items-center gap-2 border border-border px-5 py-2.5 text-[0.65rem] tracking-[0.2em] uppercase hover:bg-accent/40",
+        theme === "estetica" ? "" : "rounded-full",
+      ].join(" ")}
     >
       {label} <ArrowRight className="size-3.5" />
     </button>

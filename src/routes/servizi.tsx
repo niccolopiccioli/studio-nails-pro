@@ -7,8 +7,9 @@ import work2 from "@/assets/work-2.jpg";
 import work3 from "@/assets/work-3.jpg";
 import work4 from "@/assets/work-4.jpg";
 import { SiteFooter, SiteHeader } from "@/components/site-header";
-import { useDocTitle } from "@/lib/brand";
+import { useBrand, useDocTitle } from "@/lib/brand";
 import { getStudioAndServices } from "@/lib/booking.functions";
+import { EsteticaServizi } from "@/themes/estetica";
 import { formatDuration, formatPrice } from "@/lib/time";
 
 export const Route = createFileRoute("/servizi")({
@@ -29,8 +30,23 @@ const photos = [work1, work2, work3, work4];
 
 function ServicesPage() {
   useDocTitle("Servizi e listino");
+  const brand = useBrand();
   const fetchData = useServerFn(getStudioAndServices);
   const { data, isLoading } = useQuery({ queryKey: ["studio"], queryFn: () => fetchData() });
+
+  if (brand.theme === "estetica") {
+    return (
+      <EsteticaServizi
+        services={data?.services ?? []}
+        studio={{
+          name: data?.studio?.name ?? brand.name,
+          about: data?.studio?.about ?? brand.desc,
+          address: data?.studio?.address ?? brand.address,
+          phone: data?.studio?.phone ?? brand.phone,
+        }}
+      />
+    );
+  }
 
   return (
     <div className="min-h-screen">

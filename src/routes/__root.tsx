@@ -144,7 +144,7 @@ function RootComponent() {
     else document.documentElement.setAttribute("data-theme", theme);
     document
       .querySelector('meta[name="theme-color"]')
-      ?.setAttribute("content", theme === "estetica" ? "#EFF4EC" : "#F7F1E7");
+      ?.setAttribute("content", theme === "estetica" ? "#141C17" : "#F7F1E7");
   }, [brand.theme]);
 
   useEffect(() => {
