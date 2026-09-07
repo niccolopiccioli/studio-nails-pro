@@ -20,25 +20,18 @@ const uuid = z.string().uuid();
 const dayString = z.string().regex(/^\d{4}-\d{2}-\d{2}$/, "Data non valida");
 
 export const getStudioAndServices = createServerFn({ method: "GET" }).handler(async () => {
-  try {
-    const sb = await admin();
-    const studioId = await getTenantId();
-    const [{ data: studio, error: e1 }, { data: services, error: e2 }] = await Promise.all([
-      sb.from("studios").select("*").eq("id", studioId).maybeSingle(),
-      sb
-        .from("services")
-        .select("*")
-        .eq("studio_id", studioId)
-        .eq("active", true)
-        .order("sort_order"),
-    ]);
-    if (e1) console.error("[getStudioAndServices] studio error:", JSON.stringify(e1));
-    if (e2) console.error("[getStudioAndServices] services error:", JSON.stringify(e2));
-    return { studio, services: services ?? [] };
-  } catch (e) {
-    console.error("[getStudioAndServices] throw:", e instanceof Error ? e.message : String(e));
-    throw e;
-  }
+  const sb = await admin();
+  const studioId = await getTenantId();
+  const [{ data: studio }, { data: services }] = await Promise.all([
+    sb.from("studios").select("*").eq("id", studioId).maybeSingle(),
+    sb
+      .from("services")
+      .select("*")
+      .eq("studio_id", studioId)
+      .eq("active", true)
+      .order("sort_order"),
+  ]);
+  return { studio, services: services ?? [] };
 });
 
 /** Dati pubblici dello studio corrente (tenant by hostname). Per loader root: tema + brand. */
