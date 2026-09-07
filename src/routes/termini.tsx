@@ -68,10 +68,10 @@ function TermsPage() {
 
           <Section title="5. Responsabilità">
             <p>
-              Nei limiti consentiti dalla legge, Veluna non risponde di danni indiretti
-              derivanti da uso, mancata disponibilità o errori del servizio, né della qualità dei
-              trattamenti erogati dal centro estetico, che resta l'unico responsabile del rapporto
-              con i propri clienti.
+              Nei limiti consentiti dalla legge, Veluna non risponde di danni indiretti derivanti da
+              uso, mancata disponibilità o errori del servizio, né della qualità dei trattamenti
+              erogati dal centro estetico, che resta l'unico responsabile del rapporto con i propri
+              clienti.
             </p>
           </Section>
 
